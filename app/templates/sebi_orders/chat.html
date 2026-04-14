@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="{{ request.url_for('static', path='css/sebi_orders_chat.css') }}">
+</head>
+<body class="sebi-chat-page">
+    <main
+        class="sebi-chat-shell"
+        data-sebi-chat
+        data-query-endpoint="{{ query_endpoint }}"
+        data-session-endpoint="{{ session_endpoint }}"
+        data-sessions-endpoint="{{ sessions_endpoint }}"
+        data-session-history-endpoint-template="{{ session_history_endpoint_template }}"
+    >
+        <aside class="sebi-chat-sidebar" aria-label="Chat history">
+            <div class="sebi-chat-sidebar-header">
+                <h1 class="sebi-chat-sidebar-title">{{ page_title }}</h1>
+                <button type="button" class="sebi-chat-new-chat" data-new-chat>New chat</button>
+            </div>
+
+            <div class="sebi-chat-history-header">Chat History</div>
+            <nav class="sebi-chat-history" data-chat-history aria-live="polite"></nav>
+        </aside>
+
+        <section class="sebi-chat-panel">
+            <section class="sebi-chat-thread" data-chat-thread aria-live="polite"></section>
+
+            <section class="sebi-chat-composer-wrap">
+                <form class="sebi-chat-form" data-chat-form>
+                    <label class="sebi-chat-label" for="sebi-chat-input">Ask a question</label>
+                    <div class="sebi-chat-composer">
+                        <textarea
+                            id="sebi-chat-input"
+                            class="sebi-chat-input"
+                            data-chat-input
+                            rows="1"
+                            placeholder="Ask about a SEBI order, matter, or follow-up..."
+                        ></textarea>
+                        <button type="submit" class="sebi-chat-send" data-chat-send>Send</button>
+                    </div>
+                    <p class="sebi-chat-hint">Press Enter to send. Use Shift+Enter for a new line.</p>
+                </form>
+            </section>
+        </section>
+    </main>
+
+    <script src="{{ request.url_for('static', path='js/sebi_orders_chat.js') }}" defer></script>
+</body>
+</html>

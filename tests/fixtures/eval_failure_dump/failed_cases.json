@@ -1,0 +1,2007 @@
+{
+  "bucket_counts": {
+    "contamination": 1,
+    "stale expectation": 9,
+    "wrong answer despite correct route": 2,
+    "wrong candidate ranking": 6,
+    "wrong route": 29
+  },
+  "bucket_queries": {
+    "contamination": [
+      "What was the settlement amount?"
+    ],
+    "stale expectation": [
+      "Prime Broking Company (India) Limited",
+      "What happened in the SAT matter concerning Prime Broking Company (India) Limited?",
+      "What did SEBI order for Hardcastle and Waud Manufacturing Ltd?",
+      "What did SEBI order for Pacheli Industrial Finance Limited?",
+      "Tell me more about Appeal No. 9999 of 2026 filed by Nonexistent Person.",
+      "Tell me more about the RTI appeal filed by Prime Broking Company India Limited.",
+      "What was the settlement amount in the Vishvaraj Environment Limited matter?",
+      "What IPO proceeds were raised in the Pacheli Industrial Finance Limited matter?",
+      "Tell me more about Adani Green Energy Limited."
+    ],
+    "wrong answer despite correct route": [
+      "What exemption was granted?",
+      "What did the appellate authority decide?"
+    ],
+    "wrong candidate ranking": [
+      "Tell me more about Hardcastle and Waud Manufacturing Ltd.",
+      "Tell me more about Prime Broking Company India Limited",
+      "Tell me more about Adani Green Energy Limited by Pranav Adani",
+      "Tell me more about Kisley Plantation Limited",
+      "Tell me more about Neelgiri Forest Ltd",
+      "What IPO proceeds were raised in the Pacheli Industrial Finance Limited matter?"
+    ],
+    "wrong route": [
+      "What is a settlement order?",
+      "What is an adjudication order under the SEBI Act?",
+      "Explain what a corrigendum does in a SEBI order.",
+      "What is an RTI appellate order?",
+      "What is an exemption order under the takeover regulations?",
+      "What is a SAT order?",
+      "What is an ex-parte interim order?",
+      "Explain orders issued under Regulation 30A.",
+      "What did the appellate authority decide for Rajat Kumar?",
+      "What was SEBI's finding against Trdez Investment Private Limited?",
+      "What did SEBI order for Elitecon International Limited?",
+      "What scheme approval or direction was issued for The Cochin Stock Exchange Limited (Demutualisation) Scheme, 2005?",
+      "What did the court decide in the matter concerning Samir Sudhir Porecha v. Geeta Jaswal and Ors. No. 3803 of 2025)?",
+      "What action did SEBI take against Basan Financial Services Limited?",
+      "What did the Special Court hold concerning Judgment dated 7.2.2026 passed by the Hon\u2019ble SEBI Special Court, Mumbai in SEBI Special Case 244 of 2020 \u2013SEBI?",
+      "What non-compliance did SEBI identify for Wealthmax Solutions Investment Advisor (Proprietor: Piyush Jain)?",
+      "What did SEBI finally direct for Mangalam Global Enterprise Limited?",
+      "What did SEBI finally direct for JP Morgan Chase Bank N.A?",
+      "What did SEBI order for Vishvaraj Environment Limited?",
+      "What action did SEBI take against Chaturvedi Group?",
+      "What did the Special Court hold concerning Judgment dated 08.10.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI?",
+      "What did the Special Court hold concerning Judgment dated 08.04.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI?",
+      "What non-compliance did SEBI identify for certain Research Analysts?",
+      "What happened in the SAT matter concerning Prime Broking Company Limited?",
+      "What was SEBI's finding against ITI Securities Broking Limited?",
+      "What did SEBI finally direct?",
+      "What sentence was imposed?",
+      "Tell me more about Cochin Stock Exchange Limited.",
+      "Compare the Chaturvedi Group and Sarvottam Securities front-running orders."
+    ]
+  },
+  "failed_case_count": 47,
+  "failed_cases": [
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "General explanatory query; no record lock expected.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "direct_llm",
+      "index": 1,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": true,
+      "primary_bucket": "wrong route",
+      "query": "What is a settlement order?",
+      "reasons": [
+        "expected route direct_llm got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "General explanatory query; no record lock expected.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "direct_llm",
+      "index": 2,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": true,
+      "primary_bucket": "wrong route",
+      "query": "What is an adjudication order under the SEBI Act?",
+      "reasons": [
+        "expected route direct_llm got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "General explanatory query; no record lock expected.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "direct_llm",
+      "index": 3,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": true,
+      "primary_bucket": "wrong route",
+      "query": "Explain what a corrigendum does in a SEBI order.",
+      "reasons": [
+        "expected route direct_llm got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "General explanatory query; no record lock expected.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "direct_llm",
+      "index": 4,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": true,
+      "primary_bucket": "wrong route",
+      "query": "What is an RTI appellate order?",
+      "reasons": [
+        "expected route direct_llm got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "General explanatory query; no record lock expected.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "direct_llm",
+      "index": 5,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": true,
+      "primary_bucket": "wrong route",
+      "query": "What is an exemption order under the takeover regulations?",
+      "reasons": [
+        "expected route direct_llm got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "General explanatory query; no record lock expected.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "direct_llm",
+      "index": 6,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": true,
+      "primary_bucket": "wrong route",
+      "query": "What is a SAT order?",
+      "reasons": [
+        "expected route direct_llm got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "General explanatory query; no record lock expected.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "direct_llm",
+      "index": 7,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": true,
+      "primary_bucket": "wrong route",
+      "query": "What is an ex-parte interim order?",
+      "reasons": [
+        "expected route direct_llm got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "general_knowledge",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.52,
+      "expectation_note": "General explanatory query; no record lock expected.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "direct_llm",
+      "index": 8,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "Explain orders issued under Regulation 30A.",
+      "reasons": [
+        "expected route direct_llm got general_knowledge"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100722"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-aa-under-rti-act",
+          "order_date": "2026-04-02",
+          "record_key": "external:100722",
+          "title": "Appeal No. 6795 of 2026 filed by Rajat Kumar"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100722",
+        "external:100722"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-aa-under-rti-act",
+          "order_date": "2026-04-02",
+          "record_key": "external:100722",
+          "title": "Appeal No. 6795 of 2026 filed by Rajat Kumar"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 1.0,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100722",
+      "expected_record_title": "Appeal No. 6795 of 2026 filed by Rajat Kumar",
+      "expected_route": "hierarchical_rag",
+      "index": 10,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What did the appellate authority decide for Rajat Kumar?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100846"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-ao",
+          "order_date": "2026-04-09",
+          "record_key": "external:100846",
+          "title": "Adjudication Order in the matter of Trdez Investment Private Limited"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100846",
+        "external:100846",
+        "external:100846"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-ao",
+          "order_date": "2026-04-09",
+          "record_key": "external:100846",
+          "title": "Adjudication Order in the matter of Trdez Investment Private Limited"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.9436,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100846",
+      "expected_record_title": "Adjudication Order in the matter of Trdez Investment Private Limited",
+      "expected_route": "hierarchical_rag",
+      "index": 12,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What was SEBI's finding against Trdez Investment Private Limited?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100685"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-chairperson-members",
+          "order_date": "2026-03-30",
+          "record_key": "external:100685",
+          "title": "Ex-Parte Interim Order in the matter of Elitecon International Limited"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100685",
+        "external:100685",
+        "external:100685",
+        "external:100685",
+        "external:100685",
+        "external:100685"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-chairperson-members",
+          "order_date": "2026-03-30",
+          "record_key": "external:100685",
+          "title": "Ex-Parte Interim Order in the matter of Elitecon International Limited"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.9034,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100685",
+      "expected_record_title": "Ex-Parte Interim Order in the matter of Elitecon International Limited",
+      "expected_route": "hierarchical_rag",
+      "index": 14,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What did SEBI order for Elitecon International Limited?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:10784"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-corporatisation-demutualisation-scheme",
+          "order_date": "2005-08-29",
+          "record_key": "external:10784",
+          "title": "Order in the matter of The Cochin Stock Exchange Limited (Demutualisation) Scheme, 2005"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:10784"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-corporatisation-demutualisation-scheme",
+          "order_date": "2005-08-29",
+          "record_key": "external:10784",
+          "title": "Order in the matter of The Cochin Stock Exchange Limited (Demutualisation) Scheme, 2005"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 1.0,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:10784",
+      "expected_record_title": "Order in the matter of The Cochin Stock Exchange Limited (Demutualisation) Scheme, 2005",
+      "expected_route": "hierarchical_rag",
+      "index": 16,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What scheme approval or direction was issued for The Cochin Stock Exchange Limited (Demutualisation) Scheme, 2005?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100736"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-courts",
+          "order_date": "2026-04-02",
+          "record_key": "external:100736",
+          "title": "Order in the matter of Samir Sudhir Porecha v. Geeta Jaswal and Ors. (Writ Petition (L) No. 3803 of 2025)."
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100736"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-courts",
+          "order_date": "2026-04-02",
+          "record_key": "external:100736",
+          "title": "Order in the matter of Samir Sudhir Porecha v. Geeta Jaswal and Ors. (Writ Petition (L) No. 3803 of 2025)."
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.5429,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100736",
+      "expected_record_title": "Order in the matter of Samir Sudhir Porecha v. Geeta Jaswal and Ors. (Writ Petition (L) No. 3803 of 2025).",
+      "expected_route": "hierarchical_rag",
+      "index": 18,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What did the court decide in the matter concerning Samir Sudhir Porecha v. Geeta Jaswal and Ors. No. 3803 of 2025)?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100770"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-ed-cgm",
+          "order_date": "2026-04-07",
+          "record_key": "external:100770",
+          "title": "Final Order in respect of Basan Financial Services Limited"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100770",
+        "external:100770"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-ed-cgm",
+          "order_date": "2026-04-07",
+          "record_key": "external:100770",
+          "title": "Final Order in respect of Basan Financial Services Limited"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.9098,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100770",
+      "expected_record_title": "Final Order in respect of Basan Financial Services Limited",
+      "expected_route": "hierarchical_rag",
+      "index": 20,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What action did SEBI take against Basan Financial Services Limited?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "stale expectation"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "external:30222",
+        "external:30223",
+        "external:30189",
+        "external:30161"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "eval_query",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": "Exact title lookup should lock to one record.",
+      "expected_record_key": "external:30222",
+      "expected_record_title": "Prime Broking Company (India) Limited",
+      "expected_route": "exact_lookup",
+      "index": 21,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "stale expectation",
+      "query": "Prime Broking Company (India) Limited",
+      "reasons": [
+        "expected route exact_lookup got clarify",
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "stale expectation"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "external:30222",
+        "external:30223",
+        "external:30189",
+        "external:30161",
+        "external:30012"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "eval_query",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:30222",
+      "expected_record_title": "Prime Broking Company (India) Limited",
+      "expected_route": "hierarchical_rag",
+      "index": 22,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "stale expectation",
+      "query": "What happened in the SAT matter concerning Prime Broking Company (India) Limited?",
+      "reasons": [
+        "expected route hierarchical_rag got clarify",
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:99769"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-special-courts",
+          "order_date": "2026-02-07",
+          "record_key": "external:99769",
+          "title": "Judgment dated 7.2.2026 passed by the Hon\u2019ble SEBI Special Court, Mumbai in SEBI Special Case 244 of 2020 \u2013SEBI vs Wada Arun Asbestos Products Pvt. Ltd. & Ors."
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:99769",
+        "external:99769",
+        "external:99769"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-special-courts",
+          "order_date": "2026-02-07",
+          "record_key": "external:99769",
+          "title": "Judgment dated 7.2.2026 passed by the Hon\u2019ble SEBI Special Court, Mumbai in SEBI Special Case 244 of 2020 \u2013SEBI vs Wada Arun Asbestos Products Pvt. Ltd. & Ors."
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.9198,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:99769",
+      "expected_record_title": "Judgment dated 7.2.2026 passed by the Hon\u2019ble SEBI Special Court, Mumbai in SEBI Special Case 244 of 2020 \u2013SEBI vs Wada Arun Asbestos Products Pvt. Ltd. & Ors.",
+      "expected_route": "hierarchical_rag",
+      "index": 24,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What did the Special Court hold concerning Judgment dated 7.2.2026 passed by the Hon\u2019ble SEBI Special Court, Mumbai in SEBI Special Case 244 of 2020 \u2013SEBI?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100851"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-under-regulation-30a",
+          "order_date": "2026-04-09",
+          "record_key": "external:100851",
+          "title": "Order in the matter of Wealthmax Solutions Investment Advisor (Proprietor: Piyush Jain)"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100851",
+        "external:100851",
+        "external:100851"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-under-regulation-30a",
+          "order_date": "2026-04-09",
+          "record_key": "external:100851",
+          "title": "Order in the matter of Wealthmax Solutions Investment Advisor (Proprietor: Piyush Jain)"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.9151,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100851",
+      "expected_record_title": "Order in the matter of Wealthmax Solutions Investment Advisor (Proprietor: Piyush Jain)",
+      "expected_route": "hierarchical_rag",
+      "index": 26,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What non-compliance did SEBI identify for Wealthmax Solutions Investment Advisor (Proprietor: Piyush Jain)?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100669"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "settlement-orders",
+          "order_date": "2026-03-30",
+          "record_key": "external:100669",
+          "title": "Settlement Order in the matter of Mangalam Global Enterprise Limited"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100669",
+        "external:100669",
+        "external:100669"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "settlement-orders",
+          "order_date": "2026-03-30",
+          "record_key": "external:100669",
+          "title": "Settlement Order in the matter of Mangalam Global Enterprise Limited"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.9509,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100669",
+      "expected_record_title": "Settlement Order in the matter of Mangalam Global Enterprise Limited",
+      "expected_route": "hierarchical_rag",
+      "index": 28,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What did SEBI finally direct for Mangalam Global Enterprise Limited?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100486"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "settlement-orders",
+          "order_date": "2026-03-20",
+          "record_key": "external:100486",
+          "title": "Settlement Order in the matter of JP Morgan Chase Bank N.A."
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100486"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "settlement-orders",
+          "order_date": "2026-03-20",
+          "record_key": "external:100486",
+          "title": "Settlement Order in the matter of JP Morgan Chase Bank N.A."
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 1.0,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100486",
+      "expected_record_title": "Settlement Order in the matter of JP Morgan Chase Bank N.A.",
+      "expected_route": "hierarchical_rag",
+      "index": 30,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What did SEBI finally direct for JP Morgan Chase Bank N.A?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "derived:58a47f2f3ab8169bffd6d73800717916db1fee7c0b8ee6259945c332c2e066a1"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-chairperson-members",
+          "order_date": "2026-03-20",
+          "record_key": "derived:58a47f2f3ab8169bffd6d73800717916db1fee7c0b8ee6259945c332c2e066a1",
+          "title": "Order in the matter of Vishvaraj Environment Limited"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "derived:58a47f2f3ab8169bffd6d73800717916db1fee7c0b8ee6259945c332c2e066a1",
+        "derived:58a47f2f3ab8169bffd6d73800717916db1fee7c0b8ee6259945c332c2e066a1"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-chairperson-members",
+          "order_date": "2026-03-20",
+          "record_key": "derived:58a47f2f3ab8169bffd6d73800717916db1fee7c0b8ee6259945c332c2e066a1",
+          "title": "Order in the matter of Vishvaraj Environment Limited"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.9271,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "derived:58a47f2f3ab8169bffd6d73800717916db1fee7c0b8ee6259945c332c2e066a1",
+      "expected_record_title": "Order in the matter of Vishvaraj Environment Limited",
+      "expected_route": "hierarchical_rag",
+      "index": 32,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What did SEBI order for Vishvaraj Environment Limited?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "stale expectation"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e",
+        "external:100209"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "eval_query",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e",
+      "expected_record_title": "Exemption order in the matter of Hardcastle and Waud Manufacturing Ltd.",
+      "expected_route": "hierarchical_rag",
+      "index": 34,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "stale expectation",
+      "query": "What did SEBI order for Hardcastle and Waud Manufacturing Ltd?",
+      "reasons": [
+        "expected route hierarchical_rag got clarify",
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "stale expectation"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "derived:69093d449801258e05a31962b30bba4735b0524616cc6679f7eba25e3480fd46",
+        "derived:458ed16723c4cbaf6336c5ae33b5c1d541e717bb30d3bd51a3d583cb70382d00"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "eval_query",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "derived:69093d449801258e05a31962b30bba4735b0524616cc6679f7eba25e3480fd46",
+      "expected_record_title": "Confirmatory Order in the matter of Pacheli Industrial Finance Limited",
+      "expected_route": "hierarchical_rag",
+      "index": 36,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "stale expectation",
+      "query": "What did SEBI order for Pacheli Industrial Finance Limited?",
+      "reasons": [
+        "expected route hierarchical_rag got clarify",
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100648"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-ed-cgm",
+          "order_date": "2026-03-27",
+          "record_key": "external:100648",
+          "title": "Order in respect of Front Running of Trades of Big Client by certain entities of Chaturvedi Group"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100648",
+        "external:100648",
+        "external:100648"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-ed-cgm",
+          "order_date": "2026-03-27",
+          "record_key": "external:100648",
+          "title": "Order in respect of Front Running of Trades of Big Client by certain entities of Chaturvedi Group"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.9055,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100648",
+      "expected_record_title": "Order in respect of Front Running of Trades of Big Client by certain entities of Chaturvedi Group",
+      "expected_route": "hierarchical_rag",
+      "index": 38,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What action did SEBI take against Chaturvedi Group?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:88411"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-special-courts",
+          "order_date": "2024-10-08",
+          "record_key": "external:88411",
+          "title": "Judgment dated 08.10.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI vs Kisley Plantation Limited & Ors. (CNR No. DLSW01-006824-2023; CC No. 594/2023)"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:88411"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-special-courts",
+          "order_date": "2024-10-08",
+          "record_key": "external:88411",
+          "title": "Judgment dated 08.10.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI vs Kisley Plantation Limited & Ors. (CNR No. DLSW01-006824-2023; CC No. 594/2023)"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.949,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:88411",
+      "expected_record_title": "Judgment dated 08.10.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI vs Kisley Plantation Limited & Ors. (CNR No. DLSW01-006824-2023; CC No. 594/2023)",
+      "expected_route": "hierarchical_rag",
+      "index": 40,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What did the Special Court hold concerning Judgment dated 08.10.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:87947",
+      "expected_record_title": "Judgment dated 08.04.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI vs Neelgiri Forest Ltd & Ors. (CNR No. DLSW01-007663-2023; CC No. 745/2023)",
+      "expected_route": "hierarchical_rag",
+      "index": 42,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What did the Special Court hold concerning Judgment dated 08.04.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI?",
+      "reasons": [
+        "expected route hierarchical_rag got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:93065"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-under-regulation-30a",
+          "order_date": "2025-03-27",
+          "record_key": "external:93065",
+          "title": "Order in the matter of certain Research Analysts"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:93065",
+        "external:93065",
+        "external:93065"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-under-regulation-30a",
+          "order_date": "2025-03-27",
+          "record_key": "external:93065",
+          "title": "Order in the matter of certain Research Analysts"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.7773,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:93065",
+      "expected_record_title": "Order in the matter of certain Research Analysts",
+      "expected_route": "hierarchical_rag",
+      "index": 44,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What non-compliance did SEBI identify for certain Research Analysts?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:30161"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-sat",
+          "order_date": "2015-06-30",
+          "record_key": "external:30161",
+          "title": "In the matter of Prime Broking Company Limited"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:30161",
+        "external:30161",
+        "external:30161",
+        "external:30161",
+        "external:30161",
+        "external:30161",
+        "external:30161"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-sat",
+          "order_date": "2015-06-30",
+          "record_key": "external:30161",
+          "title": "In the matter of Prime Broking Company Limited"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.9411,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:30161",
+      "expected_record_title": "In the matter of Prime Broking Company Limited",
+      "expected_route": "hierarchical_rag",
+      "index": 46,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What happened in the SAT matter concerning Prime Broking Company Limited?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100605"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-ao",
+          "order_date": "2026-03-25",
+          "record_key": "external:100605",
+          "title": "Adjudication Order in respect of ITI Securities Broking Limited in the matter of TradeTron and other Algo Platforms"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100605",
+        "external:100605",
+        "external:100605"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-ao",
+          "order_date": "2026-03-25",
+          "record_key": "external:100605",
+          "title": "Adjudication Order in respect of ITI Securities Broking Limited in the matter of TradeTron and other Algo Platforms"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.8398,
+      "expectation_note": "Named substantive query should stay within the named matter.",
+      "expected_record_key": "external:100605",
+      "expected_record_title": "Adjudication Order in respect of ITI Securities Broking Limited in the matter of TradeTron and other Algo Platforms",
+      "expected_route": "hierarchical_rag",
+      "index": 48,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What was SEBI's finding against ITI Securities Broking Limited?",
+      "reasons": [
+        "expected route hierarchical_rag got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "contamination",
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "Follow-up should stay anchored to prior record.",
+      "expected_record_key": "external:100486",
+      "expected_record_title": "Settlement Order in the matter of JP Morgan Chase Bank N.A.",
+      "expected_route": "memory_scoped_rag",
+      "index": 50,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": true,
+      "primary_bucket": "contamination",
+      "query": "What was the settlement amount?",
+      "reasons": [
+        "expected route memory_scoped_rag got abstain",
+        "single-matter rule not respected"
+      ],
+      "single_matter_rule_respected": false
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "Follow-up should stay anchored to prior record.",
+      "expected_record_key": "external:100669",
+      "expected_record_title": "Settlement Order in the matter of Mangalam Global Enterprise Limited",
+      "expected_route": "memory_scoped_rag",
+      "index": 52,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": true,
+      "primary_bucket": "wrong route",
+      "query": "What did SEBI finally direct?",
+      "reasons": [
+        "expected route memory_scoped_rag got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-chairperson-members",
+          "order_date": "2026-02-26",
+          "record_key": "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e",
+          "title": "Exemption order in the matter of Hardcastle and Waud Manufacturing Ltd."
+        }
+      ],
+      "actual_cited_record_keys": [
+        "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e",
+        "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e",
+        "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-chairperson-members",
+          "order_date": "2026-02-26",
+          "record_key": "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e",
+          "title": "Exemption order in the matter of Hardcastle and Waud Manufacturing Ltd."
+        }
+      ],
+      "actual_route": "memory_scoped_rag",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong answer despite correct route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.8006,
+      "expectation_note": "Follow-up should stay anchored to prior record.",
+      "expected_record_key": "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e",
+      "expected_record_title": "Exemption order in the matter of Hardcastle and Waud Manufacturing Ltd.",
+      "expected_route": "memory_scoped_rag",
+      "index": 54,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong answer despite correct route",
+      "query": "What exemption was granted?",
+      "reasons": [
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:100722"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-aa-under-rti-act",
+          "order_date": "2026-04-02",
+          "record_key": "external:100722",
+          "title": "Appeal No. 6795 of 2026 filed by Rajat Kumar"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:100722",
+        "external:100722"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-aa-under-rti-act",
+          "order_date": "2026-04-02",
+          "record_key": "external:100722",
+          "title": "Appeal No. 6795 of 2026 filed by Rajat Kumar"
+        }
+      ],
+      "actual_route": "memory_scoped_rag",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong answer despite correct route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.6938,
+      "expectation_note": "Follow-up should stay anchored to prior record.",
+      "expected_record_key": "external:100722",
+      "expected_record_title": "Appeal No. 6795 of 2026 filed by Rajat Kumar",
+      "expected_route": "memory_scoped_rag",
+      "index": 56,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong answer despite correct route",
+      "query": "What did the appellate authority decide?",
+      "reasons": [
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "Follow-up should stay anchored to prior record.",
+      "expected_record_key": "external:88411",
+      "expected_record_title": "Judgment dated 08.10.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI vs Kisley Plantation Limited & Ors. (CNR No. DLSW01-006824-2023; CC No. 594/2023)",
+      "expected_route": "memory_scoped_rag",
+      "index": 58,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "What sentence was imposed?",
+      "reasons": [
+        "expected route memory_scoped_rag got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "stale expectation"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "external:100701",
+        "external:100694",
+        "external:100695",
+        "external:100692",
+        "external:100540"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "eval_query",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": "The system should abstain rather than fuse loosely related matters.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "abstain",
+      "index": 60,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "stale expectation",
+      "query": "Tell me more about Appeal No. 9999 of 2026 filed by Nonexistent Person.",
+      "reasons": [
+        "expected route abstain got clarify"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "stale expectation"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "external:30222",
+        "external:30223",
+        "external:30189"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "eval_query",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": "The system should abstain rather than fuse loosely related matters.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "abstain",
+      "index": 62,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "stale expectation",
+      "query": "Tell me more about the RTI appeal filed by Prime Broking Company India Limited.",
+      "reasons": [
+        "expected route abstain got clarify"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "stale expectation"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "external:99896",
+        "external:99499",
+        "external:100669",
+        "external:100126",
+        "external:99922"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "eval_query",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": "The system should abstain rather than fuse loosely related matters.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "abstain",
+      "index": 63,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "stale expectation",
+      "query": "What was the settlement amount in the Vishvaraj Environment Limited matter?",
+      "reasons": [
+        "expected route abstain got clarify"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "stale expectation"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "derived:69093d449801258e05a31962b30bba4735b0524616cc6679f7eba25e3480fd46",
+        "derived:458ed16723c4cbaf6336c5ae33b5c1d541e717bb30d3bd51a3d583cb70382d00"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "eval_query",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": "The system should abstain rather than fuse loosely related matters.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "abstain",
+      "index": 64,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "stale expectation",
+      "query": "What IPO proceeds were raised in the Pacheli Industrial Finance Limited matter?",
+      "reasons": [
+        "expected route abstain got clarify"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "stale expectation"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "derived:551259f200f62065e076213d712072bed57ea9c610044f61b542791220f62c09",
+        "derived:3b2168897812899ee830f8977c450f8744ebba7be33de1151fa07dbc1a5ccad3"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "eval_query",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": "The system should abstain rather than fuse loosely related matters.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "abstain",
+      "index": 65,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "stale expectation",
+      "query": "Tell me more about Adani Green Energy Limited.",
+      "reasons": [
+        "expected route abstain got clarify"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [
+        "external:10784"
+      ],
+      "actual_active_records": [
+        {
+          "bucket_category": "orders-of-corporatisation-demutualisation-scheme",
+          "order_date": "2005-08-29",
+          "record_key": "external:10784",
+          "title": "Order in the matter of The Cochin Stock Exchange Limited (Demutualisation) Scheme, 2005"
+        }
+      ],
+      "actual_cited_record_keys": [
+        "external:10784"
+      ],
+      "actual_cited_records": [
+        {
+          "bucket_category": "orders-of-corporatisation-demutualisation-scheme",
+          "order_date": "2005-08-29",
+          "record_key": "external:10784",
+          "title": "Order in the matter of The Cochin Stock Exchange Limited (Demutualisation) Scheme, 2005"
+        }
+      ],
+      "actual_route": "exact_lookup",
+      "answer_status": "answered",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 1.0,
+      "expectation_note": "The system should abstain rather than fuse loosely related matters.",
+      "expected_record_key": null,
+      "expected_record_title": null,
+      "expected_route": "abstain",
+      "index": 66,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "Tell me more about Cochin Stock Exchange Limited.",
+      "reasons": [
+        "expected route abstain got exact_lookup"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "abstain",
+      "answer_status": "abstained",
+      "bucket_tags": [
+        "wrong route"
+      ],
+      "candidate_list_used": false,
+      "candidate_record_keys": [],
+      "candidate_source": null,
+      "case_kind": "eval_query",
+      "clarify_fired": false,
+      "confidence": 0.0,
+      "expectation_note": "Explicit comparison request permits multi-record grounding.",
+      "expected_record_key": "external:100648;external:100535",
+      "expected_record_title": "Order in respect of Front Running of Trades of Big Client by certain entities of Chaturvedi Group; Order in the matter of Front-running trades of Big Client - Sarvottam Securities Private Limited by multiple entities",
+      "expected_route": "hierarchical_rag",
+      "index": 71,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong route",
+      "query": "Compare the Chaturvedi Group and Sarvottam Securities front-running orders.",
+      "reasons": [
+        "expected route hierarchical_rag got abstain"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "wrong candidate ranking"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e",
+        "external:100209"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "wrong_answer_regression",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": null,
+      "expected_record_key": "derived:3960cfc96e2c1274ff5cbefde13b3cdc6481c71c1456bf71ba8e8e56fa52411e",
+      "expected_record_title": "Exemption order in the matter of Hardcastle and Waud Manufacturing Ltd.",
+      "expected_route": null,
+      "index": 73,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong candidate ranking",
+      "query": "Tell me more about Hardcastle and Waud Manufacturing Ltd.",
+      "reasons": [
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "wrong candidate ranking"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "external:30222",
+        "external:30223",
+        "external:30189",
+        "external:30161"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "wrong_answer_regression",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": null,
+      "expected_record_key": "external:30189",
+      "expected_record_title": "In the matter of Prime Broking Company (India) Limited",
+      "expected_route": null,
+      "index": 74,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong candidate ranking",
+      "query": "Tell me more about Prime Broking Company India Limited",
+      "reasons": [
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "wrong candidate ranking"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "derived:551259f200f62065e076213d712072bed57ea9c610044f61b542791220f62c09",
+        "derived:3b2168897812899ee830f8977c450f8744ebba7be33de1151fa07dbc1a5ccad3"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "wrong_answer_regression",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": null,
+      "expected_record_key": "derived:551259f200f62065e076213d712072bed57ea9c610044f61b542791220f62c09",
+      "expected_record_title": "Order in the matter of alleged insider trading in the scrip of Adani Green Energy Limited by Pranav Adani and Others",
+      "expected_route": null,
+      "index": 76,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong candidate ranking",
+      "query": "Tell me more about Adani Green Energy Limited by Pranav Adani",
+      "reasons": [
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "wrong candidate ranking"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "external:88411",
+        "external:88412"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "wrong_answer_regression",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": null,
+      "expected_record_key": "external:88411",
+      "expected_record_title": "Judgment dated 08.10.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI vs Kisley Plantation Limited & Ors. (CNR No. DLSW01-006824-2023; CC No. 594/2023)",
+      "expected_route": null,
+      "index": 78,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong candidate ranking",
+      "query": "Tell me more about Kisley Plantation Limited",
+      "reasons": [
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "wrong candidate ranking"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "external:87947",
+        "external:87948"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "wrong_answer_regression",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": null,
+      "expected_record_key": "external:87947",
+      "expected_record_title": "Judgment dated 08.04.2024 passed by the Hon\u2019ble SEBI Special Court, Delhi in SEBI vs Neelgiri Forest Ltd & Ors. (CNR No. DLSW01-007663-2023; CC No. 745/2023)",
+      "expected_route": null,
+      "index": 79,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong candidate ranking",
+      "query": "Tell me more about Neelgiri Forest Ltd",
+      "reasons": [
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    },
+    {
+      "actual_active_record_keys": [],
+      "actual_active_records": [],
+      "actual_cited_record_keys": [],
+      "actual_cited_records": [],
+      "actual_route": "clarify",
+      "answer_status": "clarify",
+      "bucket_tags": [
+        "wrong candidate ranking"
+      ],
+      "candidate_list_used": true,
+      "candidate_record_keys": [
+        "derived:69093d449801258e05a31962b30bba4735b0524616cc6679f7eba25e3480fd46",
+        "derived:458ed16723c4cbaf6336c5ae33b5c1d541e717bb30d3bd51a3d583cb70382d00"
+      ],
+      "candidate_source": "strict_matter_lock",
+      "case_kind": "wrong_answer_regression",
+      "clarify_fired": true,
+      "confidence": 0.0,
+      "expectation_note": null,
+      "expected_record_key": "derived:69093d449801258e05a31962b30bba4735b0524616cc6679f7eba25e3480fd46",
+      "expected_record_title": "Confirmatory Order in the matter of Pacheli Industrial Finance Limited",
+      "expected_route": null,
+      "index": 82,
+      "metadata_type": null,
+      "metadata_used": false,
+      "mixed_record_guardrail_fired": false,
+      "primary_bucket": "wrong candidate ranking",
+      "query": "What IPO proceeds were raised in the Pacheli Industrial Finance Limited matter?",
+      "reasons": [
+        "expected grounded record key but answer cited none",
+        "strict single-matter lock did not trigger"
+      ],
+      "single_matter_rule_respected": true
+    }
+  ],
+  "generated_at": "2026-04-13T12:34:55",
+  "summary": {
+    "abstain_count": 15,
+    "answered_count": 50,
+    "candidate_list_correctness": 0.1176,
+    "candidate_list_usage_count": 17,
+    "clarify_count": 17,
+    "count_parity_pass": true,
+    "failed_cases": 47,
+    "metadata_backfill_coverage": {
+      "legal_provision_docs": 140,
+      "legal_provision_rows": 7816,
+      "metadata_docs": 173,
+      "order_date_docs": 173,
+      "place_docs": 84,
+      "processed_docs": 215,
+      "signatory_designation_docs": 102,
+      "signatory_name_docs": 97
+    },
+    "mixed_record_contamination_count": 1,
+    "mixed_record_failure_count": 1,
+    "passed_cases": 35,
+    "request_failure_surface_count": 0,
+    "route_accuracy": 0.4507,
+    "single_matter_accuracy": 0.9844,
+    "structured_current_info_accuracy": 1.0,
+    "total_cases": 82,
+    "web_fallback_route_usage_count": 0,
+    "wrong_example_regression_pass_count": 5,
+    "wrong_example_regression_total": 11
+  }
+}

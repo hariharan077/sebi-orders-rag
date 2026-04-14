@@ -1,0 +1,26 @@
+{"query":"What is a settlement order?","expected_route_mode":"general_knowledge","expected_query_intent":"general_knowledge","tags":["generic_settlement_explanation"]}
+{"query":"Settlement Order in the matter of JP Morgan Chase Bank N.A.","expected_route_mode":"exact_lookup","expected_query_intent":"document_lookup","min_citations":1,"tags":["exact_title_lookup","party_specific_settlement"]}
+{"query":"What was the settlement amount?","reuse_previous_session":true,"expected_route_mode":"memory_scoped_rag","expected_query_intent":"follow_up","min_citations":1,"tags":["follow_up_after_exact_lookup","free_form_settlement_amount"]}
+{"query":"What did SEBI finally direct in the JP Morgan settlement?","expected_route_mode":"hierarchical_rag","expected_query_intent":"substantive_outcome","min_citations":1,"tags":["free_form_settlement_outcome","party_specific_settlement"]}
+{"query":"What was the settlement amount in the JP Morgan settlement order?","expected_route_mode":"hierarchical_rag","expected_query_intent":"substantive_outcome","min_citations":1,"tags":["free_form_settlement_amount","party_specific_settlement"]}
+{"query":"What was finally ordered in the settlement for JP Morgan Chase Bank N.A.?","expected_route_mode":"hierarchical_rag","expected_query_intent":"substantive_outcome","min_citations":1,"tags":["free_form_settlement_outcome","party_specific_settlement"]}
+{"query":"What were the terms of settlement in the JP Morgan matter?","expected_route_mode":"hierarchical_rag","expected_query_intent":"substantive_outcome","min_citations":1,"tags":["free_form_settlement_outcome","party_specific_settlement"]}
+{"query":"Did SEBI settle the matter involving JP Morgan Chase Bank N.A.?","expected_route_mode":"hierarchical_rag","expected_query_intent":"substantive_outcome","min_citations":1,"tags":["party_specific_settlement"]}
+{"query":"What settlement proceedings were concluded for JP Morgan Chase Bank N.A.?","expected_route_mode":"hierarchical_rag","expected_query_intent":"substantive_outcome","min_citations":1,"tags":["party_specific_settlement"]}
+{"query":"What was the settlement amount in the Mangalam Global Enterprise Limited settlement order?","expected_route_mode":"hierarchical_rag","expected_query_intent":"substantive_outcome","min_citations":1,"tags":["free_form_settlement_amount","party_specific_settlement"]}
+{"query":"What did SEBI finally direct in the Mangalam Global Enterprise settlement?","expected_route_mode":"hierarchical_rag","expected_query_intent":"substantive_outcome","min_citations":1,"tags":["free_form_settlement_outcome","party_specific_settlement"]}
+{"query":"What was the settlement amount in the Imaginary Capital Limited settlement order?","expected_route_mode":"abstain","min_citations":0,"tags":["wrong_settlement_party_abstain"]}
+{"query":"designation of shruti singh","expected_route_mode":"current_official_lookup","tags":["safe_person_fuzzy_abstain"]}
+{"query":"yash trading academy","expected_route_mode":"exact_lookup","tags":["exact_lookup_followup_session"],"session_group":"yash_trading"}
+{"query":"Who signed this case?","expected_route_mode":"memory_scoped_rag","reuse_previous_session":true,"session_group":"yash_trading","tags":["follow_up_after_exact_lookup","metadata_signatory_followup"]}
+{"query":"When was this order passed?","expected_route_mode":"memory_scoped_rag","reuse_previous_session":true,"session_group":"yash_trading","tags":["follow_up_after_exact_lookup","metadata_order_date_followup"]}
+{"query":"What is the latest news about SEBI","expected_route_mode":"current_news_lookup","tags":["current_news_lookup"]}
+{"query":"Who was the previous chairman of SEBI","expected_route_mode":"historical_official_lookup","tags":["historical_official_lookup"]}
+{"query":"Is there an abhishek in ITD","expected_route_mode":"current_official_lookup","tags":["structured_people_department_filter"]}
+{"query":"What was the Paresh Nathanlal case","expected_route_mode":"hierarchical_rag","tags":["named_order_typo_alias"]}
+{"query":"What are the sources of income for SEBI","expected_route_mode":"current_official_lookup","tags":["sebi_income_official_lookup"]}
+{"query":"What is the current commission that SEBI charges per trade","expected_route_mode":"current_official_lookup","tags":["sebi_charge_official_lookup"]}
+{"query":"who is demis hassabis","expected_route_mode":"general_knowledge","tags":["general_person_lookup"]}
+{"query":"who is larry page","expected_route_mode":"general_knowledge","tags":["general_person_lookup"]}
+{"query":"tell me more about the IPO of Vishvaraj Environment Limited","expected_route_mode":"exact_lookup","tags":["named_order_no_web_override"]}
+{"query":"tell me more about the IPO of Imaginary Alpha Securities Limited","expected_route_mode":"abstain","tags":["named_order_no_web_override"]}
