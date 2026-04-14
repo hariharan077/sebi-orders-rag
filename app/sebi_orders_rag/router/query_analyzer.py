@@ -47,6 +47,10 @@ _FOLLOW_UP_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
         re.compile(r"^(?:what|was|were|did|and|so)\b", re.IGNORECASE),
     ),
 )
+_DEICTIC_DETAIL_OR_SUMMARY_RE = re.compile(
+    r"\b(?:key\s+details?|details?|explain|tell\s+me\s+more|summary|summar(?:ise|ize))\b",
+    re.IGNORECASE,
+)
 _SMALLTALK_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("greeting", re.compile(r"^\s*(?:hi|hello|hey|good (?:morning|afternoon|evening))\b[\s!.?]*$", re.IGNORECASE)),
     ("thanks", re.compile(r"^\s*(?:thanks|thank you|thx)\b[\s!.?]*$", re.IGNORECASE)),
@@ -356,7 +360,7 @@ _ORDER_AMOUNT_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 _ORDER_HOLDING_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("shares", re.compile(r"\bshares?\b", re.IGNORECASE)),
     ("percentage", re.compile(r"\bpercentage\b|\d+(?:\.\d+)?\s*%", re.IGNORECASE)),
-    ("holding", re.compile(r"\bhold(?:ing|ings)?\b", re.IGNORECASE)),
+    ("holding", re.compile(r"\bholding(?:s)?\b|\bshareholding\b", re.IGNORECASE)),
     ("ownership", re.compile(r"\bown(?:s|ed|ership)?\b", re.IGNORECASE)),
 )
 _ORDER_PARTY_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -376,7 +380,7 @@ _ORDER_OBSERVATION_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
         "generic_observations",
         re.compile(
-            r"\b(?:what were the observations|what did .* observe|what did .* find|what did .* conclude)\b",
+            r"\b(?:what were the observations|what did .* observe|what did .* find|what did .* conclude|what did .* hold)\b",
             re.IGNORECASE,
         ),
     ),
@@ -409,6 +413,10 @@ _ORDER_NUMERIC_FACT_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
             r"\b(?:listing price|listed at|highest price|peak price|lowest price|low price)\b",
             re.IGNORECASE,
         ),
+    ),
+    (
+        "ipo_proceeds",
+        re.compile(r"\b(?:ipo proceeds|proceeds were raised)\b", re.IGNORECASE),
     ),
 )
 _FREEFORM_NUMERIC_ORDER_SUBJECT_RE = re.compile(
@@ -681,14 +689,24 @@ def analyze_query(
         pattern_query=pattern_query,
         has_active_scope=has_session_scope,
     )
+    generic_legal_definition = bool(general_explanatory_signals) and not (
+        title_or_party_lookup_signals
+        or matter_reference_signals
+        or strict_matter_lock.named_matter_query
+        or _contains_deictic_reference(pattern_query)
+    )
+    deictic_detail_or_summary_follow_up = bool(
+        has_session_scope and _is_active_matter_deictic_detail_follow_up(pattern_query)
+    )
 
     if has_session_scope and not _looks_like_new_lookup(query):
         if (
             procedural_or_outcome_signals
             or _contains_deictic_reference(pattern_query)
+            or deictic_detail_or_summary_follow_up
             or asks_order_signatory
             or asks_order_date
-            or asks_legal_provisions
+            or (asks_legal_provisions and not generic_legal_definition)
             or asks_order_pan
             or asks_order_amount
             or asks_order_holding
@@ -696,6 +714,7 @@ def analyze_query(
             or asks_order_observations
             or asks_order_numeric_fact
             or active_matter_follow_up_intent is not None
+            or (asks_provision_explanation and not generic_legal_definition)
         ):
             likely_follow_up = True
 
@@ -722,6 +741,22 @@ def analyze_query(
             )
         )
     )
+
+    if deictic_detail_or_summary_follow_up and not fresh_query_override:
+        strict_matter_lock = StrictMatterLock(
+            named_matter_query=False,
+            strict_scope_required=False,
+            strict_single_matter=False,
+            ambiguous=False,
+            comparison_intent=strict_matter_lock.comparison_intent,
+            comparison_terms=strict_matter_lock.comparison_terms,
+            matched_aliases=strict_matter_lock.matched_aliases,
+            matched_entities=strict_matter_lock.matched_entities,
+            matched_titles=strict_matter_lock.matched_titles,
+            locked_record_keys=(),
+            candidates=(),
+            reason_codes=("active_matter_deictic_follow_up",),
+        )
 
     settlement_explanatory = _is_generic_settlement_explanation(
         pattern_query,
@@ -773,12 +808,18 @@ def analyze_query(
         or (
             current_info_query.query_family == "person_lookup"
             and not mentions_sebi
-            and not _explicit_current_person_query(query)
+            and not (
+                _explicit_current_person_query(query)
+                or bool(current_info_query.department_hint)
+            )
         )
         or (
             strict_matter_lock.named_matter_query
             and current_info_query.query_family == "person_lookup"
-            and not _explicit_current_person_query(query)
+            and not (
+                _explicit_current_person_query(query)
+                or bool(current_info_query.department_hint)
+            )
         )
         or (
             (
@@ -835,8 +876,8 @@ def analyze_query(
         and (
             asks_order_signatory
             or asks_order_date
-            or asks_legal_provisions
-            or asks_provision_explanation
+            or (asks_legal_provisions and not generic_legal_definition)
+            or (asks_provision_explanation and not generic_legal_definition)
             or asks_order_pan
             or asks_order_amount
             or asks_order_holding
@@ -844,6 +885,7 @@ def analyze_query(
             or asks_order_observations
             or asks_order_numeric_fact
             or active_matter_follow_up_intent is not None
+            or deictic_detail_or_summary_follow_up
             or (
                 _contains_deictic_reference(pattern_query)
                 and any(
@@ -863,6 +905,8 @@ def analyze_query(
     ):
         likely_follow_up = False
     if fresh_query_override:
+        likely_follow_up = False
+    if generic_legal_definition:
         likely_follow_up = False
     appears_settlement_specific = bool(settlement_signals) and not settlement_explanatory and bool(
         title_or_party_lookup_signals
@@ -1105,6 +1149,13 @@ def _contains_deictic_reference(normalized_query: str) -> bool:
             "these regulations",
             "these provisions",
         )
+    )
+
+
+def _is_active_matter_deictic_detail_follow_up(normalized_query: str) -> bool:
+    return bool(
+        _contains_deictic_reference(normalized_query)
+        and _DEICTIC_DETAIL_OR_SUMMARY_RE.search(normalized_query)
     )
 
 

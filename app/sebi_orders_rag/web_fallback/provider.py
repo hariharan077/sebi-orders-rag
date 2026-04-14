@@ -9,7 +9,7 @@ from typing import Any
 from ..config import SebiOrdersRagSettings
 from ..exceptions import ConfigurationError, MissingDependencyError
 from .models import WebSearchRequest, WebSearchResult, WebSearchSource
-from .ranking import extract_domain, is_domain_allowed, rank_web_sources
+from .ranking import canonicalize_source_url, extract_domain, is_domain_allowed, rank_web_sources
 
 _COMMON_SEARCH_INSTRUCTIONS = (
     "Use web search only for this answer. "
@@ -162,17 +162,24 @@ class OpenAIResponsesWebSearchProvider(WebSearchProvider):
 
         answer_text, annotations = _extract_answer_and_annotations(response)
         answer_status, normalized_text = _normalize_answer_text(answer_text)
-        raw_sources = _merge_web_sources(
-            _extract_sources_from_annotations(
-                annotations,
-                source_type=request.source_type,
-            ),
-            _extract_sources_from_response(
+        annotation_sources = _extract_sources_from_annotations(
+            annotations,
+            source_type=request.source_type,
+        )
+        response_sources = (
+            ()
+            if annotation_sources
+            else _extract_sources_from_response(
                 response,
                 source_type=request.source_type,
-            ),
+            )
         )
-        ranked_sources = rank_web_sources(raw_sources, allowed_domains=allowed_domains)
+        raw_sources = _merge_web_sources(annotation_sources, response_sources)
+        ranked_sources = rank_web_sources(
+            raw_sources,
+            allowed_domains=allowed_domains,
+            unique_per_domain=request.source_type == "general_web",
+        )
         if request.source_type == "official_web" and allowed_domains:
             ranked_sources = tuple(
                 source
@@ -372,7 +379,7 @@ def _extract_sources_from_annotations(
     for annotation in annotations:
         if getattr(annotation, "type", None) != "url_citation":
             continue
-        url = str(getattr(annotation, "url", "") or "").strip()
+        url = canonicalize_source_url(str(getattr(annotation, "url", "") or ""))
         title = str(getattr(annotation, "title", "") or "").strip()
         domain = extract_domain(url)
         if not url or not domain:
@@ -400,7 +407,7 @@ def _extract_sources_from_response(
             continue
         action = getattr(item, "action", None)
         for source in getattr(action, "sources", ()) or ():
-            url = str(getattr(source, "url", "") or "").strip()
+            url = canonicalize_source_url(str(getattr(source, "url", "") or ""))
             domain = extract_domain(url)
             if not url or not domain:
                 continue
@@ -446,16 +453,22 @@ def _strip_inline_markdown_links(text: str) -> str:
 
 def _source_title_from_url(url: str) -> str:
     domain = extract_domain(url)
-    path = url.split("?", 1)[0].rstrip("/").split("/")
+    normalized = canonicalize_source_url(url)
+    path = normalized.split("?", 1)[0].rstrip("/").split("/")
     if not path:
         return domain or url
-    leaf = path[-1]
-    if not leaf or "." not in leaf:
+    leaf = next((segment for segment in reversed(path) if segment), "")
+    if not leaf:
         return domain or url
-    slug = leaf.rsplit(".", 1)[0]
+    slug = leaf.rsplit(".", 1)[0] if "." in leaf else leaf
     slug = re.sub(r"_\d+$", "", slug)
-    slug = slug.replace("-", " ").replace("_", " ")
-    slug = re.sub(r"\s+", " ", slug).strip()
-    if not slug:
+    slug = slug.replace("-", " ").replace("_", " ").strip()
+    slug = re.sub(r"\s+", " ", slug)
+    if not slug or slug.isdigit():
         return domain or url
-    return slug[:1].upper() + slug[1:]
+    words = [
+        word.upper() if word.isupper() and len(word) <= 5 else word.capitalize()
+        for word in slug.split()
+    ]
+    rendered = " ".join(words).strip()
+    return rendered or domain or url

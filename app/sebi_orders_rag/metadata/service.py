@@ -45,8 +45,11 @@ _SIGNATORY_DESIGNATION_TOKENS: tuple[str, ...] = (
 )
 _PAN_RE = re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b")
 _AMOUNT_RE = re.compile(
-    r"\b(?:rs\.?|inr)\s*[0-9][0-9,]*(?:\.\d+)?\b|\b[0-9][0-9,]*(?:\.\d+)?\s*(?:crore|lakh)\b",
+    r"(?:₹\s*[0-9][0-9,]*(?:\.\d+)?(?:/-)?|\b(?:rs\.?|inr)\s*[0-9][0-9,]*(?:\.\d+)?(?:/-)?\b|\b[0-9][0-9,]*(?:\.\d+)?\s*(?:crore|lakh)\b)",
     re.IGNORECASE,
+)
+_SETTLEMENT_LINE_ITEM_RE = re.compile(
+    r"(?P<name>[A-Z][A-Za-z .&'-]{2,80}?)\s+(?P<amount>₹\s*[0-9][0-9,]*(?:\.\d+)?(?:/-)?)"
 )
 _HOLDING_SIGNAL_RE = re.compile(r"\bshares?\b|\bhold(?:ing|ings)?\b|\bown(?:s|ed|ership)?\b|\b\d+(?:\.\d+)?\s*%\b", re.IGNORECASE)
 _PARTY_SIGNAL_RE = re.compile(r"\bpart(?:y|ies)\b|\bnoticees?\b|\brespondents?\b|\bappellants?\b", re.IGNORECASE)
@@ -69,8 +72,10 @@ _PRICE_INCREASE_QUERY_RE = re.compile(
     r"\b(?:how much did .* share price increase|how much .* price increase|price increased by|percentage increase|percent increase)\b",
     re.IGNORECASE,
 )
+_SETTLEMENT_RE = re.compile(r"\bsettlement amount\b", re.IGNORECASE)
+_PENALTY_RE = re.compile(r"\bpenalt(?:y|ies)\b|\bfine\b", re.IGNORECASE)
 _QUERY_SUBJECT_RE = re.compile(
-    r"\b(?:does|did|do)\s+(?P<subject>[a-z][a-z0-9 .&'/-]{2,120}?)\s+(?:own|hold|held)\b",
+    r"\b(?:does|did|do|would|will)\s+(?P<subject>[a-z][a-z0-9 .&'/-]{2,120}?)\s+(?:own|hold|held)\b",
     re.IGNORECASE,
 )
 _OBSERVATION_TERM_RE = re.compile(
@@ -79,9 +84,9 @@ _OBSERVATION_TERM_RE = re.compile(
 )
 _DA_TERM_RE = re.compile(r"\b(?:designated authority|(?:^|\s)da(?:\s|$))\b", re.IGNORECASE)
 _ENQUIRY_TERM_RE = re.compile(r"\benquiry\b", re.IGNORECASE)
-_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.;])\s+|\n+")
+_SENTENCE_SPLIT_RE = re.compile(r"(?<!\b[Nn]o\.)(?<!\b[Nn]os\.)(?<=[.;])\s+|\n+")
 _DECISION_TERM_RE = re.compile(
-    r"\b(?:dismissed|allowed|disposed of|set aside|upheld|quashed|remanded|rejected|accepted|granted)\b",
+    r"\b(?:dismissed|allowed|disposed of|set aside|upheld|quashed|remanded|rejected|accepted|granted|confirm(?:ed|s)?|modified|revoked|warning|remain(?:s)? in force|cease to apply)\b",
     re.IGNORECASE,
 )
 _ACTIVE_MATTER_FOLLOW_UP_TERMS: dict[str, tuple[str, ...]] = {
@@ -130,6 +135,12 @@ _ACTIVE_MATTER_FOLLOW_UP_TERMS: dict[str, tuple[str, ...]] = {
         "directions",
         "ordered that",
         "final order",
+        "confirm",
+        "modified",
+        "revoked",
+        "remain in force",
+        "warning",
+        "cease to apply",
     ),
     "outcome": (
         "dismissed",
@@ -183,6 +194,26 @@ _SECTION_PRIORS_RESULT: dict[str, float] = {
     "annexure": 0.4,
     "header": 0.2,
 }
+_SEMANTIC_FRAGMENT_START_RE = re.compile(r"^(?:and|or|but|which|that)\b", re.IGNORECASE)
+_SEMANTIC_DANGLING_END_RE = re.compile(r"\b(?:and|or|but|which|that|to|of|as per)\.$", re.IGNORECASE)
+_FALSE_BOUNDARY_PERIOD_RE = re.compile(r"(?<=[a-z])\.\s+(?=[a-z])")
+_FINAL_DIRECTION_ACTION_RE = re.compile(
+    r"\b(?:hereby\s+confirm|confirm(?:ed|s)?\b[^.]{0,80}\bdirection|modified|shall stand revoked|revoked|remain(?:s)? in force|warning|cease to apply|refund|repayment|debarred|restrained|penalt(?:y|ies)|do hereby issue the following directions)\b",
+    re.IGNORECASE,
+)
+_FINAL_DIRECTION_SKIP_RE = re.compile(
+    r"\b(?:as an interim measure|detailed investigation in the matter is in progress|detailed investigation shall be carried out|based on the outcome of the detailed investigation|this order shall take effect immediately|copy of this order shall be served|investigating authority to confirm the facts)\b",
+    re.IGNORECASE,
+)
+_FINAL_DIRECTION_CONFIRM_RE = re.compile(r"\b(?:i\s+hereby\s+)?confirm(?:ed|s)?\b", re.IGNORECASE)
+_FINAL_DIRECTION_REVOKE_RE = re.compile(r"\b(?:shall stand revoked|revoked)\b", re.IGNORECASE)
+_FINAL_DIRECTION_REMAIN_RE = re.compile(r"\bremain(?:s)? in force\b", re.IGNORECASE)
+_FINAL_DIRECTION_WARNING_RE = re.compile(r"\bwarning\b", re.IGNORECASE)
+_FINAL_DIRECTION_CEASE_RE = re.compile(r"\bcease to apply\b", re.IGNORECASE)
+_FINAL_DIRECTION_DIRECT_RE = re.compile(
+    r"\b(?:refund|repayment|debarred|restrained|penalt(?:y|ies)|do hereby issue the following directions)\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -948,14 +979,56 @@ def _answer_amount_fact(
     row: StoredOrderMetadata,
     chunks: Sequence[MetadataChunkText],
 ) -> MetadataAnswer | None:
+    normalized_query = " ".join(query.lower().split())
     relevant_chunks = _select_relevant_chunks(query=query, chunks=chunks, signal_re=_AMOUNT_RE)
+    if "settlement amount" in normalized_query:
+        settlement_items: list[tuple[str, str]] = []
+        for chunk in relevant_chunks:
+            for match in _SETTLEMENT_LINE_ITEM_RE.finditer(chunk.text):
+                settlement_items.append(
+                    (
+                        " ".join(match.group("name").split()),
+                        _normalize_amount_text(match.group("amount")),
+                    )
+                )
+        deduped_items = list(dict.fromkeys(settlement_items))
+        if deduped_items:
+            if len(deduped_items) == 1:
+                answer_text = (
+                    f"The settlement amount recorded in this matter was "
+                    f"{deduped_items[0][1]} for {deduped_items[0][0]}."
+                )
+            else:
+                answer_text = (
+                    "The settlement amounts recorded in this matter were: "
+                    + ", ".join(f"{name} {amount}" for name, amount in deduped_items)
+                    + "."
+                )
+            return MetadataAnswer(
+                answer_text=answer_text,
+                citations=tuple(
+                    _metadata_chunk_citation(row=row, chunk=chunk, citation_number=index)
+                    for index, chunk in enumerate(relevant_chunks[:2], start=1)
+                ),
+                metadata_type="settlement_amount_fact",
+                debug={
+                    "document_version_id": row.document_version_id,
+                    "metadata_type": "settlement_amount_fact",
+                    "line_item_count": len(deduped_items),
+                },
+            )
     for chunk in relevant_chunks:
-        matches = tuple(dict.fromkeys(match.group(0) for match in _AMOUNT_RE.finditer(chunk.text)))
+        matches = tuple(
+            dict.fromkeys(_normalize_amount_text(match.group(0)) for match in _AMOUNT_RE.finditer(chunk.text))
+        )
         if not matches:
             continue
         rendered = matches[0] if len(matches) == 1 else f"{matches[0]} (and related amounts in the cited text)"
+        answer_text = f"The cited order text mentions an amount of {rendered}."
+        if "settlement amount" in normalized_query:
+            answer_text = f"The settlement amount recorded in this matter was {rendered}."
         return MetadataAnswer(
-            answer_text=f"The cited order text mentions an amount of {rendered}.",
+            answer_text=answer_text,
             citations=(_metadata_chunk_citation(row=row, chunk=chunk, citation_number=1),),
             metadata_type="amount_fact",
             debug={
@@ -1209,21 +1282,35 @@ def _answer_final_direction_follow_up(
             for chunk in chunks
             if (
                 (chunk.section_type or "").strip() in {"directions", "operative_order"}
-                or re.search(
-                    r"\b(?:refund|repayment|debarred|prohibited from accessing the securities market|penalt(?:y|ies)|do hereby issue the following directions)\b",
-                    chunk.text,
-                    re.IGNORECASE,
-                )
+                or _FINAL_DIRECTION_ACTION_RE.search(chunk.text)
             )
         )
         if not relevant_chunks:
             continue
-        answer_text = _render_final_direction_follow_up_answer(relevant_chunks)
+        max_page = max(chunk.page_end or chunk.page_start or 0 for chunk in relevant_chunks)
+        late_chunks = tuple(
+            chunk
+            for chunk in relevant_chunks
+            if (chunk.page_end or chunk.page_start or 0) >= max_page - 1
+        )
+        if late_chunks:
+            relevant_chunks = late_chunks
+        ordered_chunks = tuple(
+            sorted(
+                relevant_chunks,
+                key=lambda chunk: (
+                    -_score_final_direction_chunk(chunk),
+                    -(chunk.page_end or chunk.page_start or 0),
+                    -chunk.chunk_id,
+                ),
+            )
+        )
+        answer_text = _render_final_direction_follow_up_answer(ordered_chunks)
         if answer_text is None:
             continue
         citations = tuple(
             _metadata_chunk_citation(row=row, chunk=chunk, citation_number=index)
-            for index, chunk in enumerate(relevant_chunks[:2], start=1)
+            for index, chunk in enumerate(ordered_chunks[:2], start=1)
         )
         candidate = MetadataAnswer(
             answer_text=answer_text,
@@ -1234,7 +1321,7 @@ def _answer_final_direction_follow_up(
                 "record_key": row.record_key,
                 "metadata_type": "active_matter_final_direction",
                 "follow_up_intent": "final_direction",
-                "chunk_ids": tuple(chunk.chunk_id for chunk in relevant_chunks[:2]),
+                "chunk_ids": tuple(chunk.chunk_id for chunk in ordered_chunks[:2]),
             },
         )
         if best_answer is None or len(citations) > len(best_answer.citations):
@@ -1245,54 +1332,46 @@ def _answer_final_direction_follow_up(
 def _render_final_direction_follow_up_answer(
     chunks: Sequence[MetadataChunkText],
 ) -> str | None:
-    combined_text = " ".join(" ".join(chunk.text.split()) for chunk in chunks)
-    if not combined_text:
-        return None
-    has_directional_text = re.search(
-        r"\b(?:refund|repayment|debarred|penalt(?:y|ies)|do hereby issue the following directions)\b",
-        combined_text,
-        re.IGNORECASE,
-    )
-    if has_directional_text is None:
-        return None
-    clauses: list[str] = []
-    if re.search(r"\brefund|repayment\b", combined_text, re.IGNORECASE):
-        clauses.append("ordered refunds of money collected from investors and completion of the repayment process")
-    debar_match = re.search(
-        r"\bdebarred\b[^.]*?(?:for a period of [^.]+|until[^.]+)?",
-        combined_text,
-        re.IGNORECASE,
-    )
-    if debar_match is not None:
-        debar_text = debar_match.group(0)
-        duration_match = re.search(r"for a period of [^.]+|until[^.]+", debar_text, re.IGNORECASE)
-        if duration_match is not None:
-            clauses.append(
-                "debarred the noticee from the securities market "
-                + duration_match.group(0).strip(" .")
-            )
-        else:
-            clauses.append("debarred the noticee from the securities market")
-    penalty_anchor = re.search(r"\bpenalt(?:y|ies)\b", combined_text, re.IGNORECASE)
-    if penalty_anchor is not None:
-        local_window = combined_text[penalty_anchor.start(): penalty_anchor.start() + 500]
-        amounts = re.findall(r"Rs\.?\s*[0-9,]+(?:\.[0-9]+)?", local_window, flags=re.IGNORECASE)
-        if amounts:
-            if len(amounts) == 1:
-                clauses.append(f"imposed a monetary penalty of {amounts[0]}")
-            else:
-                clauses.append(
-                    "imposed monetary penalties of "
-                    + ", ".join(amounts[:-1])
-                    + f" and {amounts[-1]}"
+    candidates: list[tuple[float, str, str]] = []
+    for chunk in chunks:
+        section_type = (chunk.section_type or "other").strip()
+        page_rank = float(chunk.page_end or chunk.page_start or 0)
+        for raw_sentence in _SENTENCE_SPLIT_RE.split(_normalize_semantic_chunk_text(chunk.text)):
+            sentence = _clean_sentence(raw_sentence)
+            if not _semantic_sentence_usable(sentence):
+                continue
+            if _FINAL_DIRECTION_SKIP_RE.search(sentence):
+                continue
+            if _FINAL_DIRECTION_ACTION_RE.search(sentence) is None:
+                continue
+            rendered = _normalize_final_direction_sentence(sentence)
+            if not rendered:
+                continue
+            candidates.append(
+                (
+                    _score_final_direction_sentence(rendered, section_type=section_type) + (page_rank / 1000.0),
+                    _final_direction_sentence_kind(rendered),
+                    rendered,
                 )
-        else:
-            clauses.append("imposed monetary penalties")
-    if not clauses:
+            )
+    if not candidates:
         return None
-    if len(clauses) == 1:
-        return f"SEBI {clauses[0]}."
-    return "SEBI " + ", ".join(clauses[:-1]) + f", and {clauses[-1]}."
+    ordered = sorted(candidates, key=lambda item: (-item[0], len(item[2])))
+    selected: list[str] = []
+    seen_sentences: set[str] = set()
+    seen_kinds: set[str] = set()
+    for _, kind, sentence in ordered:
+        normalized = sentence.lower()
+        if normalized in seen_sentences:
+            continue
+        if kind in seen_kinds and len(selected) >= 2:
+            continue
+        seen_sentences.add(normalized)
+        seen_kinds.add(kind)
+        selected.append(sentence)
+        if len(selected) >= 3:
+            break
+    return " ".join(selected) if selected else None
 
 
 def _best_semantic_follow_up_match(
@@ -1379,7 +1458,7 @@ def _extract_semantic_follow_up_answer(
 ) -> str | None:
     sentences = [
         _clean_sentence(sentence)
-        for sentence in _SENTENCE_SPLIT_RE.split(chunk.text)
+        for sentence in _SENTENCE_SPLIT_RE.split(_normalize_semantic_chunk_text(chunk.text))
     ]
     sentences = [sentence for sentence in sentences if sentence]
     if not sentences:
@@ -1387,6 +1466,8 @@ def _extract_semantic_follow_up_answer(
     intent_terms = _ACTIVE_MATTER_FOLLOW_UP_TERMS.get(follow_up_intent, ())
     scored_sentences: list[tuple[float, str]] = []
     for sentence in sentences:
+        if not _semantic_sentence_usable(sentence):
+            continue
         lowered = sentence.lower()
         score = 0.0
         for term in intent_terms:
@@ -1405,6 +1486,8 @@ def _extract_semantic_follow_up_answer(
 
     if not scored_sentences:
         fallback = sentences[0]
+        if not _semantic_sentence_usable(fallback):
+            return None
         if follow_up_intent == "settlement_amount" and not _AMOUNT_RE.search(fallback):
             return None
         if follow_up_intent in _ACTIVE_FOLLOW_UP_RESULT_INTENTS and not _DECISION_TERM_RE.search(fallback):
@@ -1425,6 +1508,126 @@ def _clean_sentence(value: str) -> str:
     if not sentence.endswith("."):
         sentence += "."
     return sentence
+
+
+def _normalize_semantic_chunk_text(text: str) -> str:
+    normalized = re.sub(r"\s*\n+\s*", " ", text or "")
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    return _FALSE_BOUNDARY_PERIOD_RE.sub(" ", normalized)
+
+
+def _semantic_sentence_usable(sentence: str) -> bool:
+    normalized = (sentence or "").strip()
+    if len(normalized) < 25:
+        return False
+    if normalized[:1].islower():
+        return False
+    if _SEMANTIC_FRAGMENT_START_RE.search(normalized):
+        return False
+    return _SEMANTIC_DANGLING_END_RE.search(normalized) is None
+
+
+def _score_final_direction_chunk(chunk: MetadataChunkText) -> float:
+    section_type = (chunk.section_type or "other").strip()
+    score = {
+        "operative_order": 4.0,
+        "directions": 3.8,
+        "findings": 1.8,
+        "issues": 1.2,
+        "other": 0.6,
+    }.get(section_type, 0.6)
+    text = chunk.text or ""
+    if _FINAL_DIRECTION_CONFIRM_RE.search(text):
+        score += 2.4
+    if _FINAL_DIRECTION_REVOKE_RE.search(text):
+        score += 2.4
+    if _FINAL_DIRECTION_REMAIN_RE.search(text):
+        score += 2.0
+    if _FINAL_DIRECTION_WARNING_RE.search(text):
+        score += 1.6
+    if _FINAL_DIRECTION_CEASE_RE.search(text):
+        score += 1.6
+    if _FINAL_DIRECTION_DIRECT_RE.search(text):
+        score += 1.8
+    return score
+
+
+def _score_final_direction_sentence(sentence: str, *, section_type: str) -> float:
+    score = {
+        "operative_order": 4.0,
+        "directions": 3.8,
+        "findings": 1.6,
+        "issues": 1.0,
+    }.get(section_type, 0.6)
+    if _FINAL_DIRECTION_CONFIRM_RE.search(sentence):
+        score += 2.4
+    if _FINAL_DIRECTION_REVOKE_RE.search(sentence):
+        score += 2.4
+    if _FINAL_DIRECTION_REMAIN_RE.search(sentence):
+        score += 2.0
+    if _FINAL_DIRECTION_WARNING_RE.search(sentence):
+        score += 1.6
+    if _FINAL_DIRECTION_CEASE_RE.search(sentence):
+        score += 1.6
+    if _FINAL_DIRECTION_DIRECT_RE.search(sentence):
+        score += 1.8
+    return score
+
+
+def _normalize_final_direction_sentence(sentence: str) -> str:
+    normalized = re.sub(r"^(?:accordingly|therefore|further|hence|however|thus|in view of the above),\s*", "", sentence, flags=re.IGNORECASE)
+    confirm_match = re.search(r"\bhereby\s+confirm\b(?P<rest>.*)", normalized, flags=re.IGNORECASE)
+    if confirm_match is not None:
+        normalized = "The order confirms" + confirm_match.group("rest")
+    normalized = re.sub(
+        r"^I\s+hereby\s+confirm\b",
+        "The order confirms",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"^I\s+confirm\b",
+        "The order confirms",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"^I\s+hereby\s+direct\b",
+        "The order directs",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(
+        r"^I\s+(?:issue|hereby\s+issue)\s+a\s+warning\b",
+        "The order issues a warning",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    normalized = normalized.strip()
+    if normalized[:1].islower():
+        normalized = normalized[:1].upper() + normalized[1:]
+    return normalized if _semantic_sentence_usable(normalized) else ""
+
+
+def _final_direction_sentence_kind(sentence: str) -> str:
+    lowered = sentence.lower()
+    if _FINAL_DIRECTION_CONFIRM_RE.search(lowered):
+        return "confirm"
+    if _FINAL_DIRECTION_REVOKE_RE.search(lowered):
+        return "revoke"
+    if _FINAL_DIRECTION_REMAIN_RE.search(lowered):
+        return "remain"
+    if _FINAL_DIRECTION_WARNING_RE.search(lowered):
+        return "warning"
+    if _FINAL_DIRECTION_CEASE_RE.search(lowered):
+        return "cease"
+    if "refund" in lowered or "repayment" in lowered:
+        return "refund"
+    if "debarred" in lowered or "restrained" in lowered:
+        return "market_access"
+    if "penalty" in lowered:
+        return "penalty"
+    return "direction"
 
 
 def _answer_party_fact(
@@ -1542,15 +1745,20 @@ def _select_relevant_chunks(
     signal_re: re.Pattern[str],
 ) -> tuple[MetadataChunkText, ...]:
     subject_tokens = tuple(token for token in re.findall(r"[a-z0-9]+", (_extract_query_subject(query) or "").lower()) if token)
+    normalized_subject = " ".join(subject_tokens)
     scored: list[tuple[int, MetadataChunkText]] = []
     for chunk in chunks:
         lowered = chunk.text.lower()
         if not signal_re.search(chunk.text):
             continue
         score = 1
-        if subject_tokens and all(token in lowered for token in subject_tokens[:2]):
+        if normalized_subject and normalized_subject in lowered:
+            score += 6
+        elif subject_tokens and all(token in lowered for token in subject_tokens[:2]):
             score += 3
         elif subject_tokens and any(token in lowered for token in subject_tokens):
+            score += 1
+        if "%" in chunk.text or "shares" in lowered:
             score += 1
         if "proposed" in lowered:
             score += 1
@@ -1576,6 +1784,10 @@ def _first_fact(
 
 def _display_numeric_fact(fact: StoredNumericFact) -> str:
     return fact.value_text or (str(fact.value_numeric) if fact.value_numeric is not None else "the cited figure")
+
+
+def _normalize_amount_text(value: str) -> str:
+    return re.sub(r"\s+", " ", value.strip())
 
 
 def _render_context_label(context_label: str) -> str:

@@ -112,6 +112,8 @@ def _resolve_execution_route_mode(
 
 
 def _should_prefer_exact_lookup(*, query: str, analysis: QueryAnalysis) -> bool:
+    if analysis.comparison_intent:
+        return False
     if analysis.strict_scope_required or analysis.title_or_party_lookup_signals:
         return True
     if analysis.appears_sat_court_style:

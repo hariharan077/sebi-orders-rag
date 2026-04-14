@@ -261,6 +261,11 @@ def _filter_candidates_for_query_family(
         if str(getattr(candidate, "bucket_name", "") or "").strip() in preferred_buckets
     )
     if filtered:
+        if hard_filter and _hard_bucket_filter_conflicts_with_identity(
+            filtered=filtered,
+            candidates=candidates,
+        ):
+            return ()
         return filtered
     return () if hard_filter else tuple(candidates)
 
@@ -274,6 +279,26 @@ def _preferred_buckets_for_query(source_query: str) -> tuple[tuple[str, ...], bo
         if pattern.search(normalized_query):
             return buckets, False
     return (), False
+
+
+def _hard_bucket_filter_conflicts_with_identity(
+    *,
+    filtered: Sequence[Any],
+    candidates: Sequence[Any],
+) -> bool:
+    return (
+        not any(_candidate_has_identity_signal(candidate) for candidate in filtered)
+        and any(_candidate_has_identity_signal(candidate) for candidate in candidates)
+    )
+
+
+def _candidate_has_identity_signal(candidate: Any) -> bool:
+    return bool(
+        getattr(candidate, "record_key_match", False)
+        or getattr(candidate, "exact_title_match", False)
+        or getattr(candidate, "matched_aliases", ())
+        or getattr(candidate, "matched_entity_terms", ())
+    )
 
 
 def build_person_clarification_candidates(

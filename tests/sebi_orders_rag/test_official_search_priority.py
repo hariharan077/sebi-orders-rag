@@ -153,6 +153,118 @@ class OfficialSearchPriorityTests(unittest.TestCase):
         self.assertEqual(result.debug["model_used"], "o4-mini")
         self.assertEqual(result.sources[0].domain, "sebi.gov.in")
 
+    def test_general_web_provider_prefers_annotation_sources_and_dedupes_domains(self) -> None:
+        response = SimpleNamespace(
+            output=(
+                SimpleNamespace(
+                    type="web_search_call",
+                    action=SimpleNamespace(
+                        sources=(
+                            SimpleNamespace(url="https://example.com/noisy-source"),
+                            SimpleNamespace(url="https://www.adani.com/en/about-us/leadership/ashish-khanna"),
+                        )
+                    ),
+                ),
+                SimpleNamespace(
+                    type="message",
+                    content=(
+                        SimpleNamespace(
+                            type="output_text",
+                            text="ANSWER: Ashish Khanna is the CEO of Adani Green Energy Limited.",
+                            annotations=(
+                                SimpleNamespace(
+                                    type="url_citation",
+                                    url="https://m.economictimes.com/industry/renewables/amit-singh-to-step-down-as-ceo-of-adani-green-energy-ashish-khanna-to-take-over-from-april-2025/articleshow/118760637.cms?utm_source=test",
+                                    title="Amit Singh to step down as CEO of Adani Green Energy; Ashish Khanna to take over from April 2025",
+                                ),
+                                SimpleNamespace(
+                                    type="url_citation",
+                                    url="https://www.adani.com/en/about-us/leadership/ashish-khanna",
+                                    title="Ashish Khanna",
+                                ),
+                                SimpleNamespace(
+                                    type="url_citation",
+                                    url="https://www.adani.com/en/our-businesses/renewable-energy",
+                                    title="Adani Green Energy leadership",
+                                ),
+                                SimpleNamespace(
+                                    type="url_citation",
+                                    url="https://www.zaubacorp.com/company/ADANI-GREEN-ENERGY-LIMITED/U40106GJ2015PLC082007",
+                                    title="Adani Green Energy Limited",
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            output_text="",
+        )
+
+        provider = _build_fake_web_provider(response=response, provider_name="general_web_search", source_type="general_web")
+        result = provider.search(
+            request=WebSearchRequest(
+                query="Who is the CEO of Adani Green Energy Limited?",
+                lookup_type="general_knowledge",
+                instructions="Answer only if the web sources support the company-role fact.",
+                source_type="general_web",
+            )
+        )
+
+        self.assertEqual(result.answer_status, "answered")
+        self.assertEqual(result.debug["raw_source_count"], 4)
+        self.assertEqual(result.debug["filtered_source_count"], 3)
+        self.assertEqual(
+            {source.domain for source in result.sources},
+            {"economictimes.com", "adani.com", "zaubacorp.com"},
+        )
+        self.assertNotIn("example.com", {source.domain for source in result.sources})
+        self.assertTrue(
+            all(
+                (source.source_title or "").lower() != (source.domain or "").lower()
+                for source in result.sources
+            )
+        )
+
+    def test_general_web_provider_uses_slug_title_when_annotations_are_absent(self) -> None:
+        response = SimpleNamespace(
+            output=(
+                SimpleNamespace(
+                    type="web_search_call",
+                    action=SimpleNamespace(
+                        sources=(
+                            SimpleNamespace(
+                                url="https://www.adani.com/en/about-us/leadership/ashish-khanna/"
+                            ),
+                        )
+                    ),
+                ),
+                SimpleNamespace(
+                    type="message",
+                    content=(
+                        SimpleNamespace(
+                            type="output_text",
+                            text="ANSWER: Ashish Khanna is the CEO of Adani Green Energy Limited.",
+                            annotations=(),
+                        ),
+                    ),
+                ),
+            ),
+            output_text="",
+        )
+
+        provider = _build_fake_web_provider(response=response, provider_name="general_web_search", source_type="general_web")
+        result = provider.search(
+            request=WebSearchRequest(
+                query="Who is the CEO of Adani Green Energy Limited?",
+                lookup_type="general_knowledge",
+                instructions="Answer only if the web sources support the company-role fact.",
+                source_type="general_web",
+            )
+        )
+
+        self.assertEqual(result.answer_status, "answered")
+        self.assertEqual(result.sources[0].source_title, "Ashish Khanna")
+
 
 class _EmptyStructuredFetcher:
     def fetch(self, source) -> FetchedDirectorySource:
@@ -194,6 +306,31 @@ def _settings() -> SebiOrdersRagSettings:
         db_dsn="postgresql://unused",
         data_root=Path(".").resolve(),
     )
+
+
+def _build_fake_web_provider(*, response, provider_name: str, source_type: str) -> OpenAIResponsesWebSearchProvider:
+    class _FakeResponsesClient:
+        def create(self, **kwargs):
+            return response
+
+    class _FakeOpenAI:
+        def __init__(self, **kwargs) -> None:
+            self.responses = _FakeResponsesClient()
+
+    fake_openai = types.ModuleType("openai")
+    fake_openai.OpenAI = _FakeOpenAI
+
+    with mock.patch.dict(sys.modules, {"openai": fake_openai}):
+        return OpenAIResponsesWebSearchProvider(
+            settings=SebiOrdersRagSettings(
+                db_dsn="postgresql://unused",
+                data_root=Path(".").resolve(),
+                openai_api_key="test-key",
+                chat_model="o4-mini",
+            ),
+            provider_name=provider_name,
+            default_source_type=source_type,
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover

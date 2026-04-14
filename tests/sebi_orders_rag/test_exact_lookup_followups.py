@@ -75,6 +75,20 @@ class ExactLookupFollowUpTests(unittest.TestCase):
         self.assertIn("23.93%", answer.answer_text)
         self.assertEqual(answer.metadata_type, "holding_fact")
 
+    def test_holding_fact_question_supports_would_hold_phrasing(self) -> None:
+        service = OrderMetadataService(repository=_HoldingFactMetadataRepository())
+
+        answer = service.answer_exact_fact_question(
+            query="what percentage would aruna dhanuka family trust hold in mint investment limited",
+            document_version_ids=(501,),
+        )
+
+        self.assertIsNotNone(answer)
+        assert answer is not None
+        self.assertIn("Aruna Dhanuka Family Trust was the proposed acquirer proposed to hold", answer.answer_text)
+        self.assertIn("23.93%", answer.answer_text)
+        self.assertEqual(answer.metadata_type, "holding_fact")
+
 
 class _FakeConnection:
     def commit(self) -> None:

@@ -523,6 +523,34 @@ class StructuredInfoQueryService:
                 ),
             )
         if match_result.status == "clarify" and match_result.clarification_candidates:
+            if self._should_answer_presence_query(intent=intent):
+                answer = (
+                    f"Yes. The canonical current-info layer lists "
+                    f"{len(match_result.clarification_candidates)} matching entries for "
+                    f"{intent.department_hint or intent.designation_hint or 'the requested SEBI directory filter'}: "
+                    + "; ".join(
+                        render_person_with_context(person)
+                        for person in match_result.clarification_candidates[:8]
+                    )
+                )
+                if len(match_result.clarification_candidates) > 8:
+                    answer += "; and others."
+                else:
+                    answer += "."
+                return self._answered(
+                    answer_text=answer,
+                    lookup_type="person_lookup",
+                    records=match_result.clarification_candidates,
+                    confidence=0.85,
+                    debug=self._debug(
+                        intent=intent,
+                        matched_people=match_result.clarification_candidates,
+                        fuzzy_candidates=match_result.fuzzy_candidates,
+                        fuzzy_band=match_result.fuzzy_band,
+                        person_match_status=match_result.match_stage or match_result.status,
+                        answer_path="person:presence_multi_match",
+                    ),
+                )
             rendered = render_clarification(match_result.clarification_candidates)
             return self._insufficient(
                 intent=intent,
@@ -543,6 +571,12 @@ class StructuredInfoQueryService:
             fallback_reason="person_match_missing",
             answer_path="person:no_match",
         )
+
+    def _should_answer_presence_query(self, *, intent: StructuredCurrentInfoQuery) -> bool:
+        if not (intent.person_name and (intent.department_hint or intent.designation_hint)):
+            return False
+        normalized_query = intent.normalized_query.strip().lower()
+        return normalized_query.startswith(("is there ", "do you have ", "do we have "))
 
     def _answer_designation_count(
         self,

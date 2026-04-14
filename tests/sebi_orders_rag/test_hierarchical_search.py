@@ -3,7 +3,12 @@ from __future__ import annotations
 import unittest
 from datetime import date
 
-from app.sebi_orders_rag.retrieval.hierarchical_search import derive_hierarchical_filters
+from app.sebi_orders_rag.control.models import MatterLockCandidate, StrictMatterLock
+from app.sebi_orders_rag.retrieval.hierarchical_search import (
+    _select_chunk_hits,
+    _select_section_hits,
+    derive_hierarchical_filters,
+)
 from app.sebi_orders_rag.retrieval.scoring import (
     ChunkSearchHit,
     DocumentSearchHit,
@@ -70,6 +75,104 @@ class HierarchicalSearchTests(unittest.TestCase):
         self.assertEqual(first[0].score.lexical_rank, 2)
         self.assertEqual(first[0].score.vector_rank, 1)
 
+    def test_comparison_chunk_selection_keeps_substantive_hit_per_document(self) -> None:
+        strict_lock = StrictMatterLock(
+            comparison_intent=True,
+            candidates=(
+                MatterLockCandidate(
+                    record_key="external:100486",
+                    title="JP Morgan",
+                    bucket_name="settlement-orders",
+                    document_version_id=195,
+                    canonical_entities=("JP Morgan",),
+                    score=1.0,
+                    matched_aliases=("jp morgan",),
+                ),
+                MatterLockCandidate(
+                    record_key="external:100429",
+                    title="DDP Standard Chartered Bank",
+                    bucket_name="settlement-orders",
+                    document_version_id=198,
+                    canonical_entities=("DDP Standard Chartered Bank",),
+                    score=0.9,
+                    matched_aliases=("ddp standard chartered bank",),
+                ),
+            ),
+        )
+        chunk_hits = (
+            self._chunk_hit(chunk_id=1, document_version_id=195, section_key="jp-op-1", combined_score=0.9),
+            self._chunk_hit(chunk_id=2, document_version_id=195, section_key="jp-op-2", combined_score=0.85),
+            self._chunk_hit(chunk_id=3, document_version_id=198, section_key="ddp-header", combined_score=0.8, section_type="header"),
+            self._chunk_hit(chunk_id=4, document_version_id=198, section_key="ddp-op-1", combined_score=0.7, section_type="operative_order"),
+        )
+
+        selected = _select_chunk_hits(
+            chunk_hits,
+            limit=3,
+            strict_matter_lock=strict_lock,
+        )
+
+        selected_pairs = {(hit.document_version_id, hit.section_type) for hit in selected}
+        self.assertIn((195, "operative_order"), selected_pairs)
+        self.assertIn((198, "operative_order"), selected_pairs)
+
+    def test_comparison_section_selection_keeps_substantive_hit_per_document(self) -> None:
+        strict_lock = StrictMatterLock(
+            comparison_intent=True,
+            candidates=(
+                MatterLockCandidate(
+                    record_key="external:100486",
+                    title="JP Morgan",
+                    bucket_name="settlement-orders",
+                    document_version_id=195,
+                    canonical_entities=("JP Morgan",),
+                    score=1.0,
+                    matched_aliases=("jp morgan",),
+                ),
+                MatterLockCandidate(
+                    record_key="external:100429",
+                    title="DDP Standard Chartered Bank",
+                    bucket_name="settlement-orders",
+                    document_version_id=198,
+                    canonical_entities=("DDP Standard Chartered Bank",),
+                    score=0.9,
+                    matched_aliases=("ddp standard chartered bank",),
+                ),
+            ),
+        )
+        section_hits = (
+            self._section_hit(
+                section_node_id=1,
+                document_version_id=195,
+                section_key="jp-op",
+                combined_score=0.9,
+            ),
+            self._section_hit(
+                section_node_id=2,
+                document_version_id=198,
+                section_key="ddp-header",
+                combined_score=0.8,
+                section_type="header",
+            ),
+            self._section_hit(
+                section_node_id=3,
+                document_version_id=198,
+                section_key="ddp-op",
+                combined_score=0.7,
+                section_type="operative_order",
+            ),
+        )
+
+        selected = _select_section_hits(
+            section_hits,
+            limit=2,
+            strict_matter_lock=strict_lock,
+        )
+
+        selected_pairs = {(hit.document_version_id, hit.section_type) for hit in selected}
+        self.assertIn((195, "operative_order"), selected_pairs)
+        self.assertIn((198, "operative_order"), selected_pairs)
+
     @staticmethod
     def _document_hit(
         *,
@@ -103,6 +206,7 @@ class HierarchicalSearchTests(unittest.TestCase):
         document_version_id: int,
         section_key: str,
         combined_score: float,
+        section_type: str = "operative_order",
     ) -> SectionSearchHit:
         return SectionSearchHit(
             section_node_id=section_node_id,
@@ -114,7 +218,7 @@ class HierarchicalSearchTests(unittest.TestCase):
             order_date=date(2026, 4, 2),
             title=f"Document {document_version_id}",
             section_key=section_key,
-            section_type="operative_order",
+            section_type=section_type,
             section_title="ORDER",
             heading_path="ORDER",
             page_start=1,
@@ -130,6 +234,7 @@ class HierarchicalSearchTests(unittest.TestCase):
         document_version_id: int,
         section_key: str,
         combined_score: float,
+        section_type: str = "operative_order",
     ) -> ChunkSearchHit:
         return ChunkSearchHit(
             chunk_id=chunk_id,
@@ -144,7 +249,7 @@ class HierarchicalSearchTests(unittest.TestCase):
             page_start=1,
             page_end=2,
             section_key=section_key,
-            section_type="operative_order",
+            section_type=section_type,
             section_title="ORDER",
             heading_path="ORDER",
             detail_url=f"https://example.com/detail/{document_version_id}",

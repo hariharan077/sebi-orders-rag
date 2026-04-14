@@ -5,7 +5,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from app.sebi_orders_rag.answering.answer_service import AdaptiveRagAnswerService
+from app.sebi_orders_rag.answering.answer_service import AdaptiveRagAnswerService, _filter_general_web_sources
 from app.sebi_orders_rag.config import SebiOrdersRagSettings
 from app.sebi_orders_rag.control.models import ControlPack, DocumentIndexRow, EntityAliasRow, StrictAnswerRule
 from app.sebi_orders_rag.router.decision import AdaptiveQueryRouter
@@ -69,6 +69,23 @@ class CompanyRoleQueryRoutingTests(unittest.TestCase):
         self.assertIn("Mukesh Ambani", payload.answer_text)
         self.assertEqual(payload.citations[0].source_type, "general_web")
         self.assertTrue(payload.debug["web_fallback_debug"]["general_web_attempted"])
+
+    def test_company_role_source_filter_keeps_only_relevant_domains(self) -> None:
+        router = AdaptiveQueryRouter(control_pack=self.control_pack)
+        analysis = router.decide(
+            query="Who is the CEO of Adani Green Energy Limited",
+        ).analysis
+
+        filtered = _filter_general_web_sources(
+            query="Who is the CEO of Adani Green Energy Limited",
+            answer_text="Ashish Khanna is the CEO of Adani Green Energy Limited.",
+            analysis=analysis,
+            sources=_noisy_company_role_sources(),
+        )
+
+        domains = {source.domain for source in filtered}
+        self.assertEqual(domains, {"economictimes.com", "adani.com", "zaubacorp.com"})
+        self.assertNotIn("example.com", domains)
 
 
 def _build_control_pack() -> ControlPack:
@@ -237,6 +254,53 @@ class _FakeGeneralWebProvider:
             provider_name="general_web_search",
             lookup_type=request.lookup_type,
         )
+
+
+def _noisy_company_role_sources() -> tuple[WebSearchSource, ...]:
+    return (
+        WebSearchSource(
+            source_title="Amit Singh to step down as CEO of Adani Green Energy; Ashish Khanna to take over from April 2025",
+            source_url="https://m.economictimes.com/industry/renewables/amit-singh-to-step-down-as-ceo-of-adani-green-energy-ashish-khanna-to-take-over-from-april-2025/articleshow/118760637.cms?utm_source=test",
+            domain="economictimes.com",
+            source_type="general_web",
+            record_key="general_web:economictimes.com",
+        ),
+        WebSearchSource(
+            source_title="adani.com",
+            source_url="https://www.adani.com/en/about-us/leadership/ashish-khanna",
+            domain="adani.com",
+            source_type="general_web",
+            record_key="general_web:adani.com",
+        ),
+        WebSearchSource(
+            source_title="adani.com",
+            source_url="https://www.adani.com/en/our-businesses/renewable-energy",
+            domain="adani.com",
+            source_type="general_web",
+            record_key="general_web:adani.com",
+        ),
+        WebSearchSource(
+            source_title="zaubacorp.com",
+            source_url="https://www.zaubacorp.com/company/ADANI-GREEN-ENERGY-LIMITED/U40106GJ2015PLC082007",
+            domain="zaubacorp.com",
+            source_type="general_web",
+            record_key="general_web:zaubacorp.com",
+        ),
+        WebSearchSource(
+            source_title="zaubacorp.com",
+            source_url="https://www.zaubacorp.com/company/IRRELEVANT-PRIVATE-LIMITED/U00000GJ2015PTC000000",
+            domain="zaubacorp.com",
+            source_type="general_web",
+            record_key="general_web:zaubacorp.com",
+        ),
+        WebSearchSource(
+            source_title="Example leadership page",
+            source_url="https://example.com/leadership/jane-doe",
+            domain="example.com",
+            source_type="general_web",
+            record_key="general_web:example.com",
+        ),
+    )
 
 
 if __name__ == "__main__":  # pragma: no cover

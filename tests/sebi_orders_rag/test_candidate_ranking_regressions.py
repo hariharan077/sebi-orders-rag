@@ -59,6 +59,17 @@ class CandidateRankingRegressionTests(unittest.TestCase):
                 self.assertEqual(lock.locked_record_keys, (expected_record_key,))
                 self.assertIn("single_matter_lock", lock.reason_codes)
 
+    def test_generic_cochin_query_does_not_lock_to_demutualisation_scheme_aliases(self) -> None:
+        lock = resolve_strict_matter_lock(
+            query="Tell me more about Cochin Stock Exchange Limited.",
+            control_pack=self.pack,
+        )
+
+        self.assertFalse(lock.strict_scope_required)
+        self.assertFalse(lock.ambiguous)
+        self.assertEqual(lock.locked_record_keys, ())
+        self.assertEqual(lock.matched_aliases, ())
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

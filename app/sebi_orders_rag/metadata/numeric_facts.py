@@ -30,7 +30,7 @@ _LOWEST_PRICE_RE = re.compile(
 )
 _PAN_RE = re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b")
 _AMOUNT_RE = re.compile(
-    r"\b(?:Rs\.?|INR)\s*[0-9][0-9,]*(?:\.\d+)?\b|\b[0-9][0-9,]*(?:\.\d+)?\s*(?:crore|lakh)\b",
+    r"(?:₹\s*[0-9][0-9,]*(?:\.\d+)?(?:/-)?|\b(?:Rs\.?|INR)\s*[0-9][0-9,]*(?:\.\d+)?(?:/-)?\b|\b[0-9][0-9,]*(?:\.\d+)?\s*(?:crore|lakh)\b)",
     re.IGNORECASE,
 )
 _PCT_RE = re.compile(r"([+-]?\d+(?:\.\d+)?)\s*%")

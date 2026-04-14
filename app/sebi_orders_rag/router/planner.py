@@ -171,6 +171,12 @@ class QueryPlanner:
             )
 
         if metadata_requested:
+            if analysis.appears_general_explanatory and not analysis.appears_matter_specific:
+                return QueryPlan(
+                    route="general_knowledge",
+                    reason="general_knowledge",
+                    confidence=0.94,
+                )
             if named_order_reference or lookup_variants or analysis.has_session_scope:
                 return QueryPlan(
                     route="order_metadata",

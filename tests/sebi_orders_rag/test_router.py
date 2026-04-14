@@ -114,6 +114,15 @@ class RouterTests(unittest.TestCase):
         self.assertTrue(decision.analysis.strict_single_matter)
         self.assertEqual(decision.analysis.strict_lock_record_keys, ("external:98776",))
 
+    def test_named_substantive_settlement_query_locks_to_jp_morgan_record(self) -> None:
+        decision = self.router_with_pack.decide(
+            query="What did SEBI finally direct in the JP Morgan settlement?"
+        )
+
+        self.assertEqual(decision.route_mode, "exact_lookup")
+        self.assertTrue(decision.analysis.strict_single_matter)
+        self.assertEqual(decision.analysis.strict_lock_record_keys, ("external:100486",))
+
     def test_routes_office_follow_up_with_current_lookup_context(self) -> None:
         state = ChatSessionStateRecord(
             session_id=uuid4(),
@@ -153,6 +162,42 @@ class RouterTests(unittest.TestCase):
 
         self.assertEqual(decision.route_mode, "general_knowledge")
         self.assertEqual(decision.query_intent, "general_knowledge")
+
+    def test_general_legal_definition_ignores_active_matter_scope(self) -> None:
+        state = ChatSessionStateRecord(
+            session_id=uuid4(),
+            active_document_ids=(123,),
+            active_record_keys=("external:100663",),
+        )
+
+        decision = self.router_with_pack.decide(
+            query="What is an exemption order under the takeover regulations?",
+            session_state=state,
+        )
+
+        self.assertEqual(decision.route_mode, "general_knowledge")
+        self.assertEqual(decision.query_intent, "general_knowledge")
+
+    def test_regulation_30a_query_stays_on_general_knowledge(self) -> None:
+        decision = self.router_with_pack.decide(
+            query="Explain orders issued under Regulation 30A."
+        )
+
+        self.assertEqual(decision.route_mode, "general_knowledge")
+        self.assertEqual(decision.query_intent, "legal_explanation")
+
+    def test_neelgiri_comparison_query_builds_expected_special_court_candidates(self) -> None:
+        decision = self.router_with_pack.decide(
+            query="Compare the Neelgiri Forest Ltd judgment and sentencing order."
+        )
+
+        self.assertEqual(decision.route_mode, "hierarchical_rag")
+        self.assertTrue(decision.analysis.comparison_intent)
+        candidate_record_keys = {
+            candidate.record_key for candidate in decision.analysis.strict_matter_lock.candidates
+        }
+        self.assertIn("external:87947", candidate_record_keys)
+        self.assertIn("external:87948", candidate_record_keys)
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

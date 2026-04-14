@@ -1,14 +1,17 @@
 # SEBI Orders RAG
 
-A retrieval-augmented question-answering system for SEBI enforcement and adjudication orders. The project combines a portable downloader, a multi-phase ingestion pipeline, PostgreSQL + pgvector retrieval, and a FastAPI-backed chat surface for grounded answers over SEBI order data.
+A retrieval-augmented question-answering system for SEBI enforcement and adjudication orders. The project combines a portable downloader, a multi-phase ingestion pipeline, PostgreSQL + pgvector retrieval, a FastAPI-backed chat surface for grounded answers over SEBI order data, and an evaluation toolkit for replay, red-team, and release-gate runs.
 
 Intended public repo: [`hariharan077/sebi-orders-rag`](https://github.com/hariharan077/sebi-orders-rag)
+
+This repo is intended to be forkable and runnable on a developer's own machine. A fork should work with local PostgreSQL, a locally downloaded SEBI corpus, and the fork owner's own OpenAI API key in `.env`.
 
 ## What This Repo Shows
 
 - A portable downloader that can fetch SEBI order PDFs by category on demand.
 - A structured ingestion pipeline for manifests, extraction, chunking, embeddings, and chat.
 - Adaptive routing between exact lookup, hierarchical RAG, memory-scoped follow-ups, and current-information paths.
+- An internal evaluation engine for dataset assembly, replay/live benchmarking, red-team coverage, and release gating.
 - Regression and routing tests backed by small committed fixtures instead of bulky local artifacts.
 
 ## Stack
@@ -21,9 +24,9 @@ Intended public repo: [`hariharan077/sebi-orders-rag`](https://github.com/hariha
 ## Project Layout
 
 ```text
-app/                    application code, schemas, SQL, retrieval, chat routes
-scripts/                downloader plus phase-oriented CLI entrypoints
-tests/                  regression and routing tests
+app/                    application code, routing, retrieval, chat, evaluation modules
+scripts/                downloader, phase CLIs, and eval/release-gate entrypoints
+tests/                  regression, routing, and evaluation tests
 tests/fixtures/         committed minimal control-pack and eval-dump fixtures
 requirements-sebi-orders-rag.txt
 ```
@@ -55,6 +58,21 @@ Set your own values in `.env`.
 
 No real API keys are committed to this repo. Anyone who forks it must add their own key before running embedding or chat workflows.
 
+### 3. Run the app locally
+
+Once PostgreSQL is running and `.env` is configured, start the local FastAPI app:
+
+```bash
+python -m app.sebi_orders_rag.api.phase4_app
+```
+
+The app uses `SEBI_ORDERS_RAG_PHASE4_APP_HOST` and `SEBI_ORDERS_RAG_PHASE4_APP_PORT` from `.env`. The CLI chat entrypoint is also available for quick local validation:
+
+```bash
+python scripts/sebi_orders_phase4_chat.py \
+  --query "What did SEBI direct in the Vishvaraj Environment Limited matter?"
+```
+
 ## Demo Path
 
 These commands are a lightweight smoke path from a fresh clone:
@@ -63,10 +81,12 @@ These commands are a lightweight smoke path from a fresh clone:
 python scripts/download_orders_portable.py examples
 python scripts/sebi_orders_phase1.py --help
 python scripts/sebi_orders_phase4_chat.py --help
+python scripts/sebi_eval_run.py --help
 python -m pytest \
   tests/sebi_orders_rag/test_control_loader.py \
   tests/sebi_orders_rag/test_router.py \
-  tests/sebi_orders_rag/test_eval_equivalent_routes.py
+  tests/sebi_orders_rag/test_eval_equivalent_routes.py \
+  tests/sebi_orders_rag/test_release_gate.py
 ```
 
 To download a small local slice of the corpus:
@@ -109,6 +129,15 @@ python scripts/sebi_orders_phase4_chat.py \
   --query "What did SEBI direct in the Vishvaraj Environment Limited matter?"
 ```
 
+### 4. Run evaluation and release-gate checks
+
+```bash
+python scripts/sebi_eval_run.py --help
+python scripts/sebi_eval_release_gate.py --help
+```
+
+The evaluation commands can build datasets from committed control-pack fixtures, replay stored cases, and optionally layer in local failure dumps or red-team cases without committing generated outputs.
+
 ## Optional Control-Pack Workflow
 
 The repo does not commit timestamped `artifacts/` outputs. If you want local eval/regression packs, generate them on your machine:
@@ -124,4 +153,5 @@ If you generate a control pack, either let the app discover the latest pack unde
 
 - `sebi-orders-pdfs/` is intentionally excluded from version control. Use the downloader to fetch data locally.
 - `artifacts/` is also excluded. Those are local/generated outputs, not source-of-truth project files.
+- Local databases, virtualenvs, caches, and `.env` files are excluded as well. The committed repo is limited to source, scripts, tests, and small fixtures.
 - Committed fixtures under `tests/fixtures/` are only the minimum needed to keep a few regression tests reproducible in public.

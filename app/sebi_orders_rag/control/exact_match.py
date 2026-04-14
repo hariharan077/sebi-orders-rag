@@ -25,6 +25,9 @@ _COMPARISON_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 _TITLE_PREFIXES: tuple[str, ...] = (
     "tell me more about",
     "what happened in",
+    "what did the special court hold concerning",
+    "what did sebi finally direct in",
+    "what did sebi finally direct for",
     "what was decided in",
     "what did sebi direct in",
     "what did sebi direct for",
@@ -34,7 +37,23 @@ _TITLE_PREFIXES: tuple[str, ...] = (
     "tell me about",
     "summary of",
 )
+_PRIMARY_MATTER_PROMOTION_PREFIXES: tuple[str, ...] = (
+    "tell me more about",
+    "tell me about",
+    "summary of",
+)
 _QUERY_FOCUS_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        r"^compare the (?P<focus>.+?) judgment and sentencing(?: order)?$"
+    ),
+    re.compile(
+        r"^compare the (?P<focus>.+?) front running orders?$"
+    ),
+    re.compile(
+        r"^what did sebi finally direct in (?P<focus>.+?)(?: settlement(?: order)?| matter| order)?$"
+    ),
+    re.compile(r"^what was the settlement amount in (?P<focus>.+?)(?: settlement order)?$"),
+    re.compile(r"^what were the terms of settlement in (?P<focus>.+?)(?: matter| order)?$"),
     re.compile(r"^how much did (?P<focus>.+?) share price increase$"),
     re.compile(r"^what was the price before and after the increase in (?P<focus>.+)$"),
     re.compile(r"^what was the price before and after (?P<focus>.+)$"),
@@ -70,7 +89,7 @@ _GENERIC_NAMED_QUERY_TERMS = (
 )
 _QUERY_SUFFIX_TERMS = ("case", "matter", "order")
 _CANDIDATE_LIMIT = 5
-_GENERIC_MATCH_TERMS = frozenset({"sebi"})
+_GENERIC_MATCH_TERMS = frozenset({"sebi", "front running"})
 _QUERY_TOKEN_STOPWORDS = frozenset(
     {
         "about",
@@ -298,8 +317,13 @@ def resolve_strict_matter_lock(
             key=lambda item: (-item.score, -int(item.exact_title_match), item.record_key),
         )[:_CANDIDATE_LIMIT]
     )
+    if ordered_candidates and not any(_candidate_has_identity_signal(candidate) for candidate in ordered_candidates):
+        top_candidate = ordered_candidates[0]
+        if top_candidate.score < 0.86 or top_candidate.title_overlap_ratio < 0.45:
+            ordered_candidates = ()
     promoted_primary_candidate = _promote_primary_matter_candidate(
         query_tokens=query_tokens,
+        query_variants=query_variants,
         ordered_candidates=ordered_candidates,
         procedural_hints=procedural_hints,
     )
@@ -499,6 +523,8 @@ def _extract_query_focus(query: str) -> str:
 
 def _strip_query_suffix_terms(value: str) -> str:
     tokens = value.split()
+    while len(tokens) > 1 and tokens[0] in {"the", "this"}:
+        tokens.pop(0)
     while len(tokens) > 1 and tokens[-1] in _QUERY_SUFFIX_TERMS:
         tokens.pop()
     return " ".join(tokens)
@@ -512,8 +538,15 @@ def _match_alias_variants(
 ) -> dict[str, tuple[str, ...]]:
     matched: dict[str, tuple[str, ...]] = {}
     alias_variants = tuple(control_pack.alias_variants)
+    query_tokens = {
+        token
+        for query in (*normalized_queries, *focus_queries)
+        for token in _TOKEN_RE.findall(query)
+    }
     for variant, alias_rows in control_pack.alias_variants.items():
         if len(variant) < 3:
+            continue
+        if not _alias_matches_query_context(alias=variant, query_tokens=query_tokens):
             continue
         variant_tokens = set(variant.split())
         partial_alias_match = bool(
@@ -556,6 +589,8 @@ def _match_alias_variants(
         if not safe_alias_fuzzy:
             continue
         variant = top_candidate.value
+        if not _alias_matches_query_context(alias=variant, query_tokens=query_tokens):
+            continue
         if variant in matched:
             continue
         record_keys: list[str] = []
@@ -564,6 +599,16 @@ def _match_alias_variants(
         if record_keys:
             matched[variant] = tuple(dict.fromkeys(record_keys))
     return matched
+
+
+def _alias_matches_query_context(*, alias: str, query_tokens: set[str]) -> bool:
+    alias_tokens = set(alias.split())
+    if (
+        {"scheme", "demutualisation"} & alias_tokens
+        and not (query_tokens & {"scheme", "demutualisation"})
+    ):
+        return False
+    return True
 
 
 def _contains_phrase(normalized_query: str, normalized_phrase: str) -> bool:
@@ -626,6 +671,15 @@ def _sequence_similarity(left: str, right: str) -> float:
     return SequenceMatcher(a=left, b=right).ratio()
 
 
+def _candidate_has_identity_signal(candidate: MatterLockCandidate) -> bool:
+    return bool(
+        candidate.record_key_match
+        or candidate.exact_title_match
+        or candidate.matched_aliases
+        or candidate.matched_entity_terms
+    )
+
+
 def _extract_procedural_hints(query_tokens: set[str]) -> tuple[str, ...]:
     hints: list[str] = []
     for label, tokens in _PROCEDURAL_HINTS:
@@ -672,6 +726,11 @@ def _resolve_default_procedural_preference(
     normalized_title = normalize_match_text(title)
     if not normalized_title:
         return 1.0
+    if (
+        ("scheme" in normalized_title or "demutualisation" in normalized_title)
+        and not (query_tokens & {"scheme", "demutualisation"})
+    ):
+        return 0.32
     if "corrigendum" in normalized_title and "corrigendum" not in query_tokens:
         return 0.66
     if "sentencing" in normalized_title and not (query_tokens & {"sentencing", "sentence", "penalty"}):
@@ -692,10 +751,13 @@ def _resolve_default_procedural_preference(
 def _promote_primary_matter_candidate(
     *,
     query_tokens: set[str],
+    query_variants: tuple[str, ...],
     ordered_candidates: tuple[MatterLockCandidate, ...],
     procedural_hints: tuple[str, ...],
 ) -> MatterLockCandidate | None:
     if procedural_hints or query_tokens & _MATERIAL_QUERY_TOKENS or len(ordered_candidates) < 3:
+        return None
+    if not _has_primary_matter_promotion_prefix(query_variants):
         return None
     duplicate_title = normalize_match_text(ordered_candidates[0].title)
     if _looks_like_matter_style_title(duplicate_title):
@@ -725,6 +787,17 @@ def _promote_primary_matter_candidate(
         alternatives,
         key=lambda item: (-item.score, -item.title_overlap_ratio, item.record_key),
     )[0]
+
+
+def _has_primary_matter_promotion_prefix(query_variants: tuple[str, ...]) -> bool:
+    normalized_prefixes = tuple(
+        normalize_match_text(prefix) for prefix in _PRIMARY_MATTER_PROMOTION_PREFIXES
+    )
+    for variant in query_variants:
+        for prefix in normalized_prefixes:
+            if variant == prefix or variant.startswith(prefix + " "):
+                return True
+    return False
 
 
 def _comparison_candidates(

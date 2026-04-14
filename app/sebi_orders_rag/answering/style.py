@@ -24,7 +24,7 @@ _INTERIM_SIGNAL_RE = re.compile(
 _OVERCLAIM_OWNER_RE = re.compile(r"\bowner(?:ship)?\b", re.IGNORECASE)
 _FINALITY_RE = re.compile(r"\bfinal(?:ly)?\b", re.IGNORECASE)
 _HOLDING_QUERY_RE = re.compile(
-    r"\b(?:does|did|do)\s+(?P<subject>[a-z][a-z0-9 .&'/-]{2,120}?)\s+(?:own|hold|held)\b",
+    r"\b(?:does|did|do|would|will)\s+(?P<subject>[a-z][a-z0-9 .&'/-]{2,120}?)\s+(?:own|hold|held)\b",
     re.IGNORECASE,
 )
 _HOLDING_SENTENCE_RE = re.compile(
@@ -46,7 +46,7 @@ _SHARE_COUNT_RE = re.compile(r"([0-9][0-9,]*)\s+shares?\b", re.IGNORECASE)
 _PERCENT_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%")
 _HONORIFIC_PREFIX_RE = re.compile(r"^(?:mr|mrs|ms|dr|shri|smt)\.?\s+", re.IGNORECASE)
 _SENTENCE_SPLIT_RE = re.compile(
-    r"(?<!\bMr\.)(?<!\bMrs\.)(?<!\bMs\.)(?<!\bDr\.)(?<!\bRs\.)(?<=[.;])\s+|\n+"
+    r"(?<!\bMr\.)(?<!\bMrs\.)(?<!\bMs\.)(?<!\bDr\.)(?<!\bRs\.)(?<!\b[Nn]o\.)(?<!\b[Nn]os\.)(?<=[.;])\s+|\n+"
 )
 _BRIEF_SUMMARY_QUERY_RE = re.compile(
     r"\bbrief\s+summary\b|\bgive\s+a\s+brief\s+summary\b|\bsummar(?:ise|ize)\s+briefly\b|\bsummary\s+of\s+what\s+happened\b",
@@ -69,17 +69,25 @@ _SUMMARY_KEYWORD_RE = re.compile(
     re.IGNORECASE,
 )
 _SUMMARY_SKIP_RE = re.compile(
-    r"\b(?:copy of this order|place:|date:|page \d+|issued on|whole time member, sebi|reads as follows|factors to be taken into account while adjudging quantum of penalty|section\s+\d+[a-z()]*\s+of\s+the\s+sebi\s+act|consideration of issues and findings|the following issues require consideration)\b",
+    r"\b(?:copy of this order|place:|date:|page \d+|issued on|whole time member, sebi|reads as follows|factors to be taken into account while adjudging quantum of penalty|section\s+\d+[a-z()]*\s+of\s+the\s+sebi\s+act|consideration of issues and findings|the following issues require consideration|this direction shall not apply|detailed investigation into the matter|detailed investigation shall be carried out|without being influenced by|opportunity of personal hearing|prima facie findings recorded in the interim order|tentative in nature|based on the outcome of the detailed investigation|if the noticees have any open position|open position in any exchange)\b",
     re.IGNORECASE,
 )
 _SUMMARY_QUESTION_RE = re.compile(
     r"^(?:\(?[ivx]+\)?\s*)?(?:whether|if\s+answer|what\s+directions?\s+need\s+to\s+be\s+issued)\b",
     re.IGNORECASE,
 )
+_SUMMARY_ENUMERATION_RE = re.compile(r"^\(?[ivxlcdm]+\)?\s+", re.IGNORECASE)
+_SUMMARY_FRAGMENT_START_RE = re.compile(r"^(?:and|or|but|which|that)\b", re.IGNORECASE)
+_SUMMARY_DANGLING_END_RE = re.compile(r"\b(?:and|or|but|which|that|to|of|as per)\.$", re.IGNORECASE)
 _ACTION_OR_SUMMARY_QUERY_RE = re.compile(
     r"\b(?:summary|what happened|action taken|what was the action taken|what did .* decide|what did .* order|what relief|what exemption|what was the outcome)\b",
     re.IGNORECASE,
 )
+_EXEMPTION_REQUEST_QUERY_RE = re.compile(
+    r"\bwhat\s+exemption\b|\bwhat\s+exemption\s+was\s+granted\b",
+    re.IGNORECASE,
+)
+_IPO_PROCEEDS_QUERY_RE = re.compile(r"\bipo proceeds?\b", re.IGNORECASE)
 _MATTER_TYPE_TRIGGER_RE = re.compile(
     r"\b(?:exemption|appeal|appellate|rti|sat|tribunal|court|penalty|final direction|quasi[- ]judicial|what did sebi find|what did the da observe)\b",
     re.IGNORECASE,
@@ -98,6 +106,11 @@ _RTI_DECISION_RE = re.compile(
 )
 _FINAL_ENFORCEMENT_ACTION_RE = re.compile(
     r"\b(?:violat(?:ed|ion)|observ(?:ed|ation)|finding|findings|penalt(?:y|ies)|restrained|debarred|directed|direction|order)\b",
+    re.IGNORECASE,
+)
+_PREFERENTIAL_ALLOTMENT_RE = re.compile(r"\bpreferential allotment\b", re.IGNORECASE)
+_LOAN_CONVERSION_RE = re.compile(
+    r"\bconversion of (?:the )?outstanding unsecured loans into equity shares\b",
     re.IGNORECASE,
 )
 _ENTITY_SUBJECT_TOKENS = {
@@ -192,6 +205,16 @@ def apply_grounded_wording_caution(
     if matter_type_rewrite is not None:
         adjusted = matter_type_rewrite
         cautions.append("matter_type_context_caution")
+
+    query_context_rewrite = _rewrite_query_context_mismatch(
+        answer_text=adjusted,
+        context_chunks=context_chunks,
+        analysis=analysis,
+        matter_type=matter_type,
+    )
+    if query_context_rewrite is not None:
+        adjusted = query_context_rewrite
+        cautions.append("query_context_mismatch_caution")
 
     holding_rewrite, holding_debug = _rewrite_holding_answer(
         answer_text=adjusted,
@@ -654,6 +677,55 @@ def _rewrite_non_settlement_matter_type_answer(
     return " ".join(selected[:3]).strip()
 
 
+def _rewrite_query_context_mismatch(
+    *,
+    answer_text: str,
+    context_chunks: tuple[PromptContextChunk, ...],
+    analysis: QueryAnalysis,
+    matter_type: str,
+) -> str | None:
+    if matter_type == "settlement_order" and _EXEMPTION_REQUEST_QUERY_RE.search(analysis.raw_query):
+        settlement_summary = _render_settlement_summary_from_context(
+            context_chunks=context_chunks
+        )
+        if settlement_summary is not None:
+            return (
+                "This is a settlement order, not an exemption order. "
+                + settlement_summary
+            ).strip()
+        return (
+            "This is a settlement order, not an exemption order. "
+            "It records allegations, settlement terms, and disposal of the proceedings rather than an exemption granted by SEBI."
+        )
+
+    normalized_context = _normalize_context_text(context_chunks)
+    if not _IPO_PROCEEDS_QUERY_RE.search(analysis.raw_query):
+        return None
+    if not (
+        _PREFERENTIAL_ALLOTMENT_RE.search(normalized_context)
+        or _LOAN_CONVERSION_RE.search(normalized_context)
+    ):
+        return None
+
+    transaction_sentence = _find_context_sentence(
+        context_chunks=context_chunks,
+        patterns=(
+            _PREFERENTIAL_ALLOTMENT_RE,
+            _LOAN_CONVERSION_RE,
+        ),
+        preferred_sections=("facts", "background", "findings", "operative_order", "other"),
+    )
+    if transaction_sentence is None:
+        return (
+            "The cited order does not describe IPO proceeds. "
+            "It instead discusses a preferential allotment and loan-conversion transaction."
+        )
+    return (
+        "The cited order does not describe IPO proceeds. "
+        + _ensure_sentence(transaction_sentence.rstrip("."))
+    )
+
+
 def _collect_sentences(
     sentences: list[str],
     pattern: re.Pattern[str],
@@ -692,10 +764,7 @@ def _select_summary_sentences(
         for raw_sentence in _SENTENCE_SPLIT_RE.split(chunk.chunk_text):
             sentence = " ".join(raw_sentence.split()).strip(" .;")
             if (
-                len(sentence) < 35
-                or _SUMMARY_SKIP_RE.search(sentence)
-                or _SUMMARY_QUESTION_RE.search(sentence)
-                or sentence.endswith("?")
+                not _summary_sentence_usable(sentence)
             ):
                 continue
             score = base_score
@@ -738,6 +807,23 @@ def _ensure_sentence(value: str) -> str:
     if not sentence.endswith("."):
         sentence += "."
     return sentence
+
+
+def _summary_sentence_usable(sentence: str) -> bool:
+    normalized = sentence.strip()
+    if len(normalized) < 35:
+        return False
+    if (
+        _SUMMARY_SKIP_RE.search(normalized)
+        or _SUMMARY_QUESTION_RE.search(normalized)
+        or _SUMMARY_ENUMERATION_RE.search(normalized)
+    ):
+        return False
+    if normalized.endswith("?") or _SUMMARY_FRAGMENT_START_RE.search(normalized):
+        return False
+    if normalized[:1].islower():
+        return False
+    return _SUMMARY_DANGLING_END_RE.search(_ensure_sentence(normalized)) is None
 
 
 def _normalize_context_text(context_chunks: tuple[PromptContextChunk, ...]) -> str:
@@ -785,10 +871,7 @@ def _find_context_sentence(
         for raw_sentence in _SENTENCE_SPLIT_RE.split(chunk.chunk_text):
             sentence = _normalize_sentence_text(raw_sentence)
             if (
-                len(sentence) < 35
-                or _SUMMARY_SKIP_RE.search(sentence)
-                or _SUMMARY_QUESTION_RE.search(sentence)
-                or sentence.endswith("?")
+                not _summary_sentence_usable(sentence)
             ):
                 continue
             pattern_hits = sum(1 for pattern in patterns if pattern.search(sentence))

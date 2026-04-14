@@ -31,9 +31,10 @@ from ..current_info import (
     CurrentNewsLookupProvider,
     HistoricalOfficialLookupProvider,
     build_current_info_provider,
+    parse_company_role_query,
 )
 from ..memory.memory_service import GroundedMemoryService
-from ..metadata import OrderMetadataService
+from ..metadata import MetadataAnswer, OrderMetadataService
 from ..repositories.answers import AnswerRepository
 from ..repositories.metadata import OrderMetadataRepository
 from ..repositories.retrieval import HierarchicalRetrievalRepository
@@ -44,6 +45,7 @@ from ..retrieval.scoring import ChunkSearchHit, HierarchicalSearchResult
 from ..router.decision import AdaptiveQueryRouter
 from ..router.planner import build_order_lookup_variants
 from ..schemas import (
+    Citation,
     ChatAnswerPayload,
     ClarificationCandidate,
     ClarificationContext,
@@ -52,6 +54,7 @@ from ..schemas import (
     QueryAnalysis,
     RouteDecision,
 )
+from ..web_fallback.models import WebSearchSource
 from ..web_fallback import WebSearchRequest
 from ..web_fallback.provider import build_general_web_search_provider
 from ..web_fallback.ranking import extract_domain
@@ -91,6 +94,47 @@ _STRICT_MATTER_WEAK_SUPPORT_ANSWER = (
 _CANDIDATE_LIST_INTRO = (
     "I found multiple plausible internal SEBI matter matches. Please pick one of these exact records:"
 )
+_AMBIGUOUS_ENTITY_SUMMARY_PREFIXES: tuple[str, ...] = (
+    "tell me more about",
+    "tell me about",
+    "summary of",
+)
+_IPO_PROCEEDS_CONTEXT_RE = re.compile(
+    r"\bpreferential allotment\b|\bloan conversion\b|\bconversion of the outstanding unsecured loans into equity shares\b",
+    re.IGNORECASE,
+)
+
+
+def _select_missing_ipo_proceeds_chunk(chunks: tuple[Any, ...]) -> Any | None:
+    best_chunk = None
+    best_score = -1
+    for chunk in chunks:
+        text = str(getattr(chunk, "text", "") or "")
+        if not _IPO_PROCEEDS_CONTEXT_RE.search(text):
+            continue
+        section_type = str(getattr(chunk, "section_type", "") or "").strip().lower()
+        score = 2 if section_type in {"facts", "background", "findings"} else 1
+        if score > best_score:
+            best_chunk = chunk
+            best_score = score
+    return best_chunk
+
+
+def _should_abstain_ambiguous_entity_summary(*, query: str, analysis: QueryAnalysis) -> bool:
+    normalized_query = " ".join(query.lower().split())
+    if not any(normalized_query.startswith(prefix) for prefix in _AMBIGUOUS_ENTITY_SUMMARY_PREFIXES):
+        return False
+    if (
+        analysis.appears_matter_specific
+        or analysis.appears_general_explanatory
+        or analysis.appears_structured_current_info
+        or analysis.appears_current_official_lookup
+        or analysis.appears_current_news_lookup
+        or analysis.appears_company_role_current_fact
+        or analysis.appears_non_sebi_person_query
+    ):
+        return False
+    return True
 
 
 @dataclass(frozen=True)
@@ -407,9 +451,15 @@ class AdaptiveRagAnswerService:
                     max_results=self._settings.web_search_max_results,
                 )
             )
+            web_sources = _filter_general_web_sources(
+                query=query,
+                answer_text=web_result.answer_text,
+                analysis=decision.analysis,
+                sources=web_result.sources,
+            )
             web_confidence = assess_web_fallback_confidence(
                 answer_status=web_result.answer_status,
-                sources=web_result.sources,
+                sources=web_sources,
                 preferred_source_type="general_web",
             )
             if web_result.answer_status == "answered" and not web_confidence.should_abstain:
@@ -418,7 +468,7 @@ class AdaptiveRagAnswerService:
                     answer_text = "Broader web sources provide limited support. " + answer_text
                 answer_status = "answered"
                 confidence = web_confidence.confidence
-                citations = build_external_citations(web_result.sources)
+                citations = build_external_citations(web_sources)
             elif requires_live_web_check:
                 answer_text = (
                     web_result.answer_text
@@ -485,6 +535,15 @@ class AdaptiveRagAnswerService:
         decision: RouteDecision,
     ) -> ChatAnswerPayload:
         reason = decision.plan.reason if decision.plan is not None else "clarify"
+        if reason != "missing_order_scope_for_metadata" and _should_abstain_ambiguous_entity_summary(
+            query=query,
+            analysis=decision.analysis,
+        ):
+            return self._answer_direct_abstain(
+                query=query,
+                session_id=session_id,
+                decision=decision,
+            )
         if reason == "missing_order_scope_for_metadata":
             answer_text = (
                 "Please specify the exact SEBI order or matter before I answer that exact-fact question."
@@ -1706,6 +1765,20 @@ class AdaptiveRagAnswerService:
                 "mixed_record_guardrail": guardrail_debug,
             },
         )
+        if payload.route_mode == "abstain":
+            fallback_payload = self._maybe_build_document_lookup_fallback(
+                session_id=session_id,
+                decision=decision,
+                context_chunks=context_chunks,
+                retrieved_chunk_ids=retrieved_chunk_ids,
+                debug_payload={
+                    **execution.extracted_filters,
+                    **_build_route_debug_payload(decision.analysis),
+                    "mixed_record_guardrail": guardrail_debug,
+                },
+            )
+            if fallback_payload is not None:
+                payload = fallback_payload
         if payload.route_mode != "abstain" and payload.citations and self._settings.enable_memory:
             updated_state = self._memory.update_from_grounded_answer(
                 session_id=session_id,
@@ -1855,6 +1928,14 @@ class AdaptiveRagAnswerService:
                     route_mode=decision.route_mode,
                     metadata_answer=answer,
                 )
+            missing_numeric_payload = self._maybe_answer_missing_numeric_fact(
+                query=query,
+                session_id=session_id,
+                decision=decision,
+                document_version_ids=document_version_ids,
+            )
+            if missing_numeric_payload is not None:
+                return missing_numeric_payload
         if analysis.asks_legal_provisions or analysis.asks_provision_explanation:
             answer = self._metadata.answer_legal_provisions_question(
                 document_version_ids=document_version_ids,
@@ -1911,7 +1992,9 @@ class AdaptiveRagAnswerService:
                     route_mode=decision.route_mode,
                     metadata_answer=answer,
                 )
-        if analysis.asks_order_observations and analysis.active_order_override:
+        if analysis.asks_order_observations and (
+            analysis.active_order_override or analysis.strict_single_matter
+        ):
             answer = self._metadata.answer_observation_question(
                 query=query,
                 document_version_ids=document_version_ids,
@@ -1988,6 +2071,181 @@ class AdaptiveRagAnswerService:
         )
         return payload
 
+    def _maybe_answer_missing_numeric_fact(
+        self,
+        *,
+        query: str,
+        session_id: UUID,
+        decision: RouteDecision,
+        document_version_ids: tuple[int, ...],
+    ) -> ChatAnswerPayload | None:
+        normalized_query = " ".join(query.lower().split())
+        if "ipo proceeds" not in normalized_query:
+            return None
+        if not document_version_ids or not decision.analysis.strict_single_matter:
+            return None
+        metadata_rows = self._metadata_repository.fetch_order_metadata(
+            document_version_ids=document_version_ids
+        )
+        load_chunks = getattr(self._metadata_repository, "load_chunks", None)
+        if metadata_rows and callable(load_chunks):
+            for row in metadata_rows:
+                chunks = tuple(load_chunks(document_version_id=row.document_version_id))
+                supporting_chunk = _select_missing_ipo_proceeds_chunk(chunks)
+                if supporting_chunk is None:
+                    continue
+                citation = Citation(
+                    citation_number=1,
+                    record_key=row.record_key,
+                    title=row.title,
+                    page_start=supporting_chunk.page_start,
+                    page_end=supporting_chunk.page_end,
+                    section_type="metadata_exact_fact",
+                    document_version_id=row.document_version_id,
+                    chunk_id=supporting_chunk.chunk_id,
+                    detail_url=row.detail_url,
+                    pdf_url=row.pdf_url,
+                )
+                prompt_chunk = PromptContextChunk(
+                    citation_number=1,
+                    chunk_id=supporting_chunk.chunk_id,
+                    document_version_id=row.document_version_id,
+                    document_id=row.document_id,
+                    record_key=row.record_key,
+                    bucket_name="metadata",
+                    title=row.title,
+                    page_start=supporting_chunk.page_start,
+                    page_end=supporting_chunk.page_end,
+                    section_type=supporting_chunk.section_type or "facts",
+                    section_title=supporting_chunk.section_title,
+                    detail_url=row.detail_url,
+                    pdf_url=row.pdf_url,
+                    chunk_text=supporting_chunk.text,
+                    token_count=max(len(supporting_chunk.text.split()), 1),
+                    score=1.0,
+                )
+                answer_text, style_debug = apply_grounded_wording_caution(
+                    answer_text="The cited order describes the transaction addressed in this matter.",
+                    context_chunks=(prompt_chunk,),
+                    analysis=decision.analysis,
+                )
+                return self._build_metadata_payload(
+                    session_id=session_id,
+                    query=query,
+                    decision=decision,
+                    route_mode=decision.route_mode,
+                    metadata_answer=MetadataAnswer(
+                        answer_text=answer_text,
+                        citations=(citation,),
+                        metadata_type="missing_numeric_fact",
+                        debug={
+                            "document_version_id": row.document_version_id,
+                            "record_key": row.record_key,
+                            "metadata_type": "missing_numeric_fact",
+                            "missing_fact_query": "ipo_proceeds",
+                            "style_debug": style_debug,
+                        },
+                    ),
+                )
+        payload = ChatAnswerPayload(
+            session_id=session_id,
+            route_mode="abstain",
+            query_intent=decision.query_intent,
+            answer_text=(
+                "The cited order does not state IPO proceeds for this matter, so I cannot answer that from this record."
+            ),
+            confidence=0.0,
+            citations=(),
+            retrieved_chunk_ids=(),
+            active_record_keys=decision.analysis.strict_lock_record_keys,
+            answer_status="abstained",
+            debug={
+                **_build_route_debug_payload(decision.analysis),
+                "metadata_debug": {
+                    "used": True,
+                    "metadata_type": "missing_numeric_fact",
+                    "missing_fact_query": "ipo_proceeds",
+                },
+                "current_lookup_debug": {"used": False},
+                "news_lookup_debug": {"used": False},
+                "historical_lookup_debug": {"used": False},
+                "web_fallback_debug": _build_web_fallback_debug(
+                    structured_attempted=False,
+                    corpus_attempted=False,
+                    official_web_attempted=False,
+                    general_web_attempted=False,
+                    final_route_mode="abstain",
+                    citations=(),
+                    web_fallback_allowed=False,
+                    web_fallback_not_allowed_reason="missing_numeric_fact_in_locked_matter",
+                ),
+                "citation_debug": _build_citation_debug_payload(()),
+            },
+        )
+        self._log_answer(
+            session_id=session_id,
+            query=query,
+            payload=payload,
+            extracted_filters=payload.debug,
+            reranked_chunk_ids=(),
+        )
+        return payload
+
+    def _maybe_build_document_lookup_fallback(
+        self,
+        *,
+        session_id: UUID,
+        decision: RouteDecision,
+        context_chunks: tuple[PromptContextChunk, ...],
+        retrieved_chunk_ids: tuple[int, ...],
+        debug_payload: dict[str, Any],
+    ) -> ChatAnswerPayload | None:
+        exact_title_locked = "exact_title_or_contained_match" in tuple(
+            decision.analysis.strict_lock_reason_codes
+        )
+        if decision.query_intent != "document_lookup" and not exact_title_locked:
+            return None
+        if not decision.analysis.strict_single_matter or not context_chunks:
+            return None
+        title = context_chunks[0].title or (
+            decision.analysis.strict_lock_titles[0]
+            if decision.analysis.strict_lock_titles
+            else None
+        )
+        if not title:
+            return None
+        citations = build_citations(context_chunks[:1])
+        return ChatAnswerPayload(
+            session_id=session_id,
+            route_mode="exact_lookup",
+            query_intent=decision.query_intent,
+            answer_text=f'This refers to the SEBI matter titled "{title}".',
+            confidence=0.62,
+            citations=citations,
+            retrieved_chunk_ids=retrieved_chunk_ids,
+            active_record_keys=decision.analysis.strict_lock_record_keys,
+            answer_status="answered",
+            debug={
+                **debug_payload,
+                "metadata_debug": {"used": False},
+                "current_lookup_debug": {"used": False},
+                "news_lookup_debug": {"used": False},
+                "historical_lookup_debug": {"used": False},
+                "web_fallback_debug": _build_web_fallback_debug(
+                    structured_attempted=False,
+                    corpus_attempted=True,
+                    official_web_attempted=False,
+                    general_web_attempted=False,
+                    final_route_mode="exact_lookup",
+                    citations=citations,
+                    web_fallback_allowed=False,
+                    web_fallback_not_allowed_reason="strict_document_lookup_fallback",
+                ),
+                "citation_debug": _build_citation_debug_payload(citations),
+                "document_lookup_fallback": {"used": True},
+            },
+        )
+
     def _metadata_document_version_ids(
         self,
         *,
@@ -1999,15 +2257,17 @@ class AdaptiveRagAnswerService:
             filters = self._memory.build_memory_filters(state=state)
             if filters.document_version_ids:
                 return tuple(filters.document_version_ids)
-        if decision.analysis.strict_matter_lock.candidates:
-            return tuple(
-                candidate.document_version_id
-                for candidate in decision.analysis.strict_matter_lock.candidates
-                if candidate.document_version_id is not None
-            )
         if decision.analysis.strict_lock_record_keys:
             return self._retrieval.resolve_current_document_version_ids(
                 record_keys=decision.analysis.strict_lock_record_keys,
+            )
+        if decision.analysis.strict_matter_lock.candidates:
+            return tuple(
+                dict.fromkeys(
+                    candidate.document_version_id
+                    for candidate in decision.analysis.strict_matter_lock.candidates
+                    if candidate.document_version_id is not None
+                )
             )
         return ()
 
@@ -2484,6 +2744,7 @@ class AdaptiveRagAnswerService:
             context_chunks=context_chunks,
             cited_context_chunks=cited_context_chunks,
             retrieved_chunks=retrieved_chunks,
+            analysis=analysis,
         )
         styled_answer_text, style_debug = apply_grounded_wording_caution(
             answer_text=cleaned_answer_text,
@@ -2520,11 +2781,14 @@ class AdaptiveRagAnswerService:
         context_chunks: tuple[PromptContextChunk, ...],
         cited_context_chunks: tuple[PromptContextChunk, ...],
         retrieved_chunks: tuple[ChunkSearchHit, ...],
+        analysis: QueryAnalysis,
     ) -> tuple[PromptContextChunk, ...]:
         style_chunks_by_id: dict[int, PromptContextChunk] = {
             chunk.chunk_id: chunk
             for chunk in (*context_chunks, *cited_context_chunks)
         }
+        if analysis.asks_brief_summary:
+            return tuple(style_chunks_by_id.values())
         if len(style_chunks_by_id) == len(retrieved_chunks):
             return tuple(style_chunks_by_id.values())
 
@@ -2921,7 +3185,20 @@ def _single_candidate_auto_resolve_allowed(candidate: Any) -> bool:
 
 
 def _static_general_knowledge_answer(*, query: str, analysis: QueryAnalysis) -> str | None:
+    normalized_query = " ".join(query.lower().split())
     if "sebi_definition" not in analysis.general_explanatory_signals:
+        if "exemption order under the takeover regulations" in normalized_query:
+            return (
+                "An exemption order under the takeover regulations is a SEBI order that relieves a proposed "
+                "acquirer from specified open-offer or takeover-compliance obligations in a particular transaction, "
+                "usually subject to stated conditions."
+            )
+        if "regulation 30a" in normalized_query:
+            return (
+                "Orders under Regulation 30A are SEBI orders dealing with suspension, cancellation, or surrender "
+                "of an intermediary's certificate of registration under the SEBI (Intermediaries) Regulations, 2008, "
+                "and they usually set out the consequences and continuing obligations that follow."
+            )
         return None
     return (
         "SEBI is the Securities and Exchange Board of India, the statutory regulator for the "
@@ -3151,6 +3428,103 @@ def _general_query_requires_live_web_check(
     return any(
         token in normalized_query
         for token in ("latest", "recent", "current", "today", "now", "as of")
+    )
+
+
+_COMPANY_ROLE_SOURCE_STOPWORDS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "co",
+        "company",
+        "corp",
+        "corporation",
+        "inc",
+        "limited",
+        "ltd",
+        "of",
+        "pvt",
+        "private",
+        "the",
+    }
+)
+_PROPER_NAME_RE = re.compile(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3}\b")
+
+
+def _filter_general_web_sources(
+    *,
+    query: str,
+    answer_text: str,
+    analysis: QueryAnalysis,
+    sources: tuple[WebSearchSource, ...],
+) -> tuple[WebSearchSource, ...]:
+    if not analysis.appears_company_role_current_fact or not sources:
+        return sources
+    company_role_query = parse_company_role_query(query)
+    if company_role_query is None:
+        return sources
+    company_tokens = _source_relevance_tokens(
+        company_role_query.company_name,
+        drop_corporate_suffixes=True,
+    )
+    person_tokens = _company_role_answer_person_tokens(answer_text)
+    filtered = tuple(
+        source
+        for source in sources
+        if _company_role_source_matches(
+            source=source,
+            company_tokens=company_tokens,
+            person_tokens=person_tokens,
+        )
+    )
+    return filtered or sources
+
+
+def _company_role_answer_person_tokens(answer_text: str) -> tuple[str, ...]:
+    answer = (answer_text or "").strip()
+    if not answer:
+        return ()
+    candidates = _PROPER_NAME_RE.findall(answer)
+    if not candidates:
+        return ()
+    return _source_relevance_tokens(candidates[0], drop_corporate_suffixes=False)
+
+
+def _company_role_source_matches(
+    *,
+    source: WebSearchSource,
+    company_tokens: tuple[str, ...],
+    person_tokens: tuple[str, ...],
+) -> bool:
+    haystack = " ".join(
+        part
+        for part in (
+            source.source_title,
+            source.source_url,
+            source.snippet or "",
+            source.domain,
+        )
+        if part
+    ).lower()
+    company_hits = sum(1 for token in company_tokens if token in haystack)
+    person_hits = sum(1 for token in person_tokens if token in haystack)
+    min_company_hits = 2 if len(company_tokens) >= 2 else 1 if company_tokens else 0
+    min_person_hits = 2 if len(person_tokens) >= 2 else 1 if person_tokens else 0
+    return bool(
+        (min_company_hits and company_hits >= min_company_hits)
+        or (min_person_hits and person_hits >= min_person_hits)
+    )
+
+
+def _source_relevance_tokens(value: str, *, drop_corporate_suffixes: bool) -> tuple[str, ...]:
+    stopwords = _COMPANY_ROLE_SOURCE_STOPWORDS if drop_corporate_suffixes else frozenset({"a", "an", "and", "of", "the"})
+    return tuple(
+        dict.fromkeys(
+            token
+            for token in re.findall(r"[a-z0-9]+", value.lower())
+            if len(token) >= 3 and token not in stopwords
+        )
     )
 
 

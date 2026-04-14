@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from decimal import Decimal
 from typing import Any, Sequence
 from uuid import UUID
@@ -12,6 +13,8 @@ from ..schemas import Citation
 
 class AnswerRepository:
     """Write Phase 4 retrieval and answer audit rows."""
+
+    _RETRYABLE_DB_ERROR_NAMES = frozenset({"DeadlockDetected", "SerializationFailure"})
 
     def __init__(self, connection: Any) -> None:
         self._connection = connection
@@ -52,26 +55,22 @@ class AnswerRepository:
             VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING retrieval_id
         """
-        with self._connection.cursor() as cursor:
-            cursor.execute(
-                sql,
-                (
-                    session_id,
-                    user_query,
-                    LEGACY_RETRIEVAL_LOG_MODE_BY_ROUTE.get(route_mode, "abstain"),
-                    _json_dumps(extracted_filters or {}),
-                    list(retrieved_chunk_ids),
-                    list(reranked_chunk_ids),
-                    list(final_citation_chunk_ids),
-                    _decimal_or_none(confidence),
-                    query_intent,
-                    route_mode,
-                    _decimal_or_none(confidence),
-                    answer_status,
-                    list(cited_record_keys),
-                ),
-            )
-            row = cursor.fetchone()
+        params = (
+            session_id,
+            user_query,
+            LEGACY_RETRIEVAL_LOG_MODE_BY_ROUTE.get(route_mode, "abstain"),
+            _json_dumps(extracted_filters or {}),
+            list(retrieved_chunk_ids),
+            list(reranked_chunk_ids),
+            list(final_citation_chunk_ids),
+            _decimal_or_none(confidence),
+            query_intent,
+            route_mode,
+            _decimal_or_none(confidence),
+            answer_status,
+            list(cited_record_keys),
+        )
+        row = self._execute_returning_row(sql=sql, params=params)
         return int(row[0])
 
     def insert_answer_log(
@@ -104,44 +103,60 @@ class AnswerRepository:
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb)
             RETURNING answer_id
         """
-        with self._connection.cursor() as cursor:
-            cursor.execute(
-                sql,
-                (
-                    session_id,
-                    user_query,
-                    route_mode,
-                    query_intent,
-                    answer_text,
-                    _decimal_or_none(answer_confidence),
-                    list(cited_chunk_ids),
-                    list(cited_record_keys),
-                    _json_dumps(
-                        [
-                            {
-                                "citation_number": citation.citation_number,
-                                "record_key": citation.record_key,
-                                "title": citation.title,
-                                "page_start": citation.page_start,
-                                "page_end": citation.page_end,
-                                "section_type": citation.section_type,
-                                "document_version_id": citation.document_version_id,
-                                "chunk_id": citation.chunk_id,
-                                "detail_url": citation.detail_url,
-                                "pdf_url": citation.pdf_url,
-                                "source_url": citation.source_url,
-                                "source_title": citation.source_title,
-                                "domain": citation.domain,
-                                "source_type": citation.source_type,
-                                "snippet": citation.snippet,
-                            }
-                            for citation in citations
-                        ]
-                    ),
-                ),
-            )
-            row = cursor.fetchone()
+        params = (
+            session_id,
+            user_query,
+            route_mode,
+            query_intent,
+            answer_text,
+            _decimal_or_none(answer_confidence),
+            list(cited_chunk_ids),
+            list(cited_record_keys),
+            _json_dumps(
+                [
+                    {
+                        "citation_number": citation.citation_number,
+                        "record_key": citation.record_key,
+                        "title": citation.title,
+                        "page_start": citation.page_start,
+                        "page_end": citation.page_end,
+                        "section_type": citation.section_type,
+                        "document_version_id": citation.document_version_id,
+                        "chunk_id": citation.chunk_id,
+                        "detail_url": citation.detail_url,
+                        "pdf_url": citation.pdf_url,
+                        "source_url": citation.source_url,
+                        "source_title": citation.source_title,
+                        "domain": citation.domain,
+                        "source_type": citation.source_type,
+                        "snippet": citation.snippet,
+                    }
+                    for citation in citations
+                ]
+            ),
+        )
+        row = self._execute_returning_row(sql=sql, params=params)
         return int(row[0])
+
+    def _execute_returning_row(self, *, sql: str, params: tuple[Any, ...]) -> Any:
+        attempts = 3
+        for attempt in range(1, attempts + 1):
+            try:
+                with self._connection.cursor() as cursor:
+                    cursor.execute(sql, params)
+                    return cursor.fetchone()
+            except Exception as exc:
+                if not self._is_retryable_db_error(exc) or attempt == attempts:
+                    raise
+                rollback = getattr(self._connection, "rollback", None)
+                if callable(rollback):
+                    rollback()
+                time.sleep(0.05 * attempt)
+        raise RuntimeError("unreachable")
+
+    @classmethod
+    def _is_retryable_db_error(cls, exc: Exception) -> bool:
+        return exc.__class__.__name__ in cls._RETRYABLE_DB_ERROR_NAMES
 
 
 def _decimal_or_none(value: float | None) -> Decimal | None:
